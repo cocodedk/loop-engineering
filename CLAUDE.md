@@ -1,8 +1,8 @@
 # loop-engineering
 
 A documentation-only knowledge base on **Boris Cherny's "loop" methodology** for running
-Claude Code (popularized by third parties as *"loop engineering"*). No source code — this
-project is a curated, fact-checked research deliverable.
+Claude Code (popularized by third parties as *"loop engineering"*). The docs are a curated,
+fact-checked research deliverable; the repo also ships a runnable companion Claude Code skill.
 
 ## Structure
 
@@ -10,6 +10,9 @@ project is a curated, fact-checked research deliverable.
 - `docs/01..11-*.md` — one focused topic per file (who, the loop, three stages, anatomy,
   verification/memory, orchestration/tooling, receipts/timeline, how-to-apply, example
   loops, sources, caveats).
+- `skill/agent-loop/` — the runnable companion Claude Code skill: single
+  verification-gated loops (`scripts/verify-loop.sh`) and loop-chain decomposition
+  (`scripts/run-chain.sh`, `templates/`, `references/chains.md`).
 
 ## Conventions
 

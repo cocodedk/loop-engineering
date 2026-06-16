@@ -1,0 +1,9 @@
+{
+  "goal_file": "prompt.md",
+  "gate": { "type": "script", "verify": "bash \"$LOOP_DIR/verify.sh\"" },
+  "inputs": [],
+  "outputs": ["{{OUTPUT}}"],
+  "check": { "items_key": "{{ITEMS_KEY}}" },
+  "engine": { "max": 6, "tools": "Read,Write,Edit,Bash" },
+  "next": "{{NEXT}}"
+}
