@@ -206,6 +206,25 @@
         </div>
       </section>
 
+      <section aria-labelledby="skill-h">
+        <p class="kicker">Run it</p>
+        <h2 id="skill-h">The agent-loop skill</h2>
+        <p>Reading the method is one thing; running it is another. <code>agent-loop</code> is a companion Claude Code skill that turns this knowledge base into something you can run. It fires on "loop until the tests pass" or "keep going until the build is green" — even when you never say the word "loop."</p>
+        <div class="honesty__grid">
+          <div class="honesty__row">
+            <h3>One loop</h3>
+            <p>Give it a goal and a verification gate. It runs act → verify → re-prompt until the gate passes or a budget ceiling stops it. The loop only advances when a test, a build, or a runnable check says it did.</p>
+          </div>
+          <div class="honesty__row">
+            <h3>A chain of loops</h3>
+            <p>A big objective is decomposed into a backbone of stages; any stage fans out one parallel sub-loop per item — a page, a screen, an endpoint — and joins before continuing. A human signs off at the end.</p>
+          </div>
+        </div>
+        <figure class="callout">
+          <blockquote class="callout__quote">verify-loop.sh --goal "fix the failing auth tests" --verify "pytest tests/auth -q" --max 10</blockquote>
+        </figure>
+      </section>
+
       <section class="action" aria-labelledby="action-h">
         <p class="kicker">Go deeper</p>
         <h2 id="action-h">Read the knowledge base</h2>
