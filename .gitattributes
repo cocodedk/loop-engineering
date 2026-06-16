@@ -1,0 +1,19 @@
+# Normalize line endings on commit; check out LF on all platforms.
+* text=auto eol=lf
+
+# Explicit text types (always LF)
+*.md   text eol=lf
+*.html text eol=lf
+*.css  text eol=lf
+*.svg  text eol=lf
+*.sh   text eol=lf
+*.yml  text eol=lf
+*.json text eol=lf
+*.txt  text eol=lf
+
+# Binary types (never normalized or diffed as text)
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary
+*.zip binary

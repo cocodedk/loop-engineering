@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<!--
+  Loop Engineering — a fact-checked field guide.
+  Primary keyword: loop engineering
+  Secondary: Boris Cherny, Claude Code agent loops, autonomous coding agents
+  Search intent: informational
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Loop Engineering — Boris Cherny's Claude Code Methodology</title>
+  <meta name="description" content="A fact-checked field guide to loop engineering: how Claude Code creator Boris Cherny stopped prompting and started writing autonomous agent loops.">
+  <link rel="canonical" href="https://cocodedk.github.io/loop-engineering/">
+  <meta name="robots" content="index,follow">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Loop Engineering — Boris Cherny's Claude Code Methodology">
+  <meta property="og:description" content="A fact-checked field guide to loop engineering: how Claude Code creator Boris Cherny stopped prompting and started writing autonomous agent loops.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cocodedk.github.io/loop-engineering/">
+  <meta property="og:image" content="https://cocodedk.github.io/loop-engineering/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Loop Engineering — you write the loop that prompts the agent.">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Loop Engineering — Boris Cherny's Claude Code Methodology">
+  <meta name="twitter:description" content="A fact-checked field guide to loop engineering: how Claude Code creator Boris Cherny stopped prompting and started writing autonomous agent loops.">
+  <meta name="twitter:image" content="https://cocodedk.github.io/loop-engineering/og.png">
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <!-- fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=JetBrains+Mono:wght@400;500&display=swap">
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/hero.css">
+  <link rel="stylesheet" href="css/content.css">
+  <link rel="stylesheet" href="css/motion.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Loop Engineering",
+    "about": "Boris Cherny's loop methodology for Claude Code",
+    "description": "A fact-checked field guide to loop engineering: how Claude Code creator Boris Cherny stopped prompting and started writing autonomous agent loops.",
+    "url": "https://cocodedk.github.io/loop-engineering/",
+    "image": "https://cocodedk.github.io/loop-engineering/og.png",
+    "datePublished": "2026-06-16",
+    "dateModified": "2026-06-16",
+    "inLanguage": "en",
+    "author": {
+      "@type": "Person",
+      "name": "Babak Bandpey",
+      "url": "https://cocode.dk",
+      "sameAs": [
+        "https://linkedin.com/in/babakbandpey",
+        "https://github.com/cocodedk"
+      ]
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <svg class="hero__glyph" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 12.5A8 8 0 1 0 24 16"/>
+        <path d="M23.4 8.6 24 12.8l-4.2.6"/>
+      </svg>
+
+      <p class="eyebrow fade-up d1">A FIELD GUIDE · COMPILED 2026</p>
+
+      <h1 class="hero__thesis fade-up d2">
+        Loop engineering: you stop prompting the agent and write the <em>loop</em> that prompts it.
+      </h1>
+
+      <figure class="callout fade-up d3">
+        <blockquote class="callout__quote">
+          I don't prompt Claude anymore. I have loops that are running. They're the ones that are prompting Claude. My job is to write loops.<span class="cursor" aria-hidden="true"></span>
+        </blockquote>
+        <figcaption class="callout__by">
+          <cite>Boris Cherny, creator of Claude Code</cite>
+          <span class="chip chip--sage">confirmed-primary</span>
+        </figcaption>
+      </figure>
+    </header>
+
+    <main>
+      <section class="tldr fade-up d4" aria-labelledby="tldr-h">
+        <p class="kicker">TL;DR</p>
+        <h2 id="tldr-h">The short version</h2>
+        <ul>
+          <li>The unit of work shifted from a single prompt to a running loop that prompts the agent for you.</li>
+          <li>A loop is a goal, a feedback signal, and a stopping condition the agent runs against on its own.</li>
+          <li>Verification is the engine. The loop only progresses when tests, types, or a checker say it did.</li>
+          <li>Memory and receipts let a loop survive context limits and pick up where the last pass left off.</li>
+          <li>You move from writing code to writing the conditions under which code gets written and accepted.</li>
+          <li>Every claim here is tagged by source so you can tell first-hand from second-hand.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="chapters-h">
+        <p class="kicker">The guide</p>
+        <h2 id="chapters-h">Chapter index</h2>
+        <ol class="chapters">
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/01-who-is-boris-cherny.md">
+              <span class="chapter__num">01</span>
+              <span class="chapter__title">Who Boris Cherny is</span>
+              <span class="chapter__desc">The person behind Claude Code, and why his take carries weight.</span>
+            </a>
+          </li>
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/02-what-is-the-loop.md">
+              <span class="chapter__num">02</span>
+              <span class="chapter__title">What "the loop" is</span>
+              <span class="chapter__desc">A plain definition before the jargon takes over.</span>
+            </a>
+          </li>
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/03-three-stages.md">
+              <span class="chapter__num">03</span>
+              <span class="chapter__title">Three stages of evolution</span>
+              <span class="chapter__desc">From prompting, to chaining, to writing the loop itself.</span>
+            </a>
+          </li>
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/04-loop-anatomy.md">
+              <span class="chapter__num">04</span>
+              <span class="chapter__title">Anatomy of a loop</span>
+              <span class="chapter__desc">Goal, action, feedback, stopping condition: the moving parts.</span>
+            </a>
+          </li>
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/05-verification-and-memory.md">
+              <span class="chapter__num">05</span>
+              <span class="chapter__title">Verification and memory</span>
+              <span class="chapter__desc">How a loop knows it made progress and remembers across passes.</span>
+            </a>
+          </li>
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/06-orchestration-and-tooling.md">
+              <span class="chapter__num">06</span>
+              <span class="chapter__title">Orchestration and tooling</span>
+              <span class="chapter__desc">The scaffolding that runs many loops without losing the thread.</span>
+            </a>
+          </li>
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/07-receipts-and-timeline.md">
+              <span class="chapter__num">07</span>
+              <span class="chapter__title">Receipts and timeline</span>
+              <span class="chapter__desc">What was said, when, and the trail that backs each claim.</span>
+            </a>
+          </li>
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/08-how-to-apply.md">
+              <span class="chapter__num">08</span>
+              <span class="chapter__title">How to apply it yourself</span>
+              <span class="chapter__desc">Turning the idea into loops you can actually run today.</span>
+            </a>
+          </li>
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/09-example-loops.md">
+              <span class="chapter__num">09</span>
+              <span class="chapter__title">Example loop patterns</span>
+              <span class="chapter__desc">Concrete loops for tests, refactors, and review.</span>
+            </a>
+          </li>
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/10-sources.md">
+              <span class="chapter__num">10</span>
+              <span class="chapter__title">Annotated sources</span>
+              <span class="chapter__desc">Every primary and secondary reference, with notes.</span>
+            </a>
+          </li>
+          <li>
+            <a class="chapter" href="https://github.com/cocodedk/loop-engineering/blob/main/docs/11-caveats.md">
+              <span class="chapter__num">11</span>
+              <span class="chapter__title">Caveats and open questions</span>
+              <span class="chapter__desc">Where the evidence thins out and what stays unsettled.</span>
+            </a>
+          </li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="honesty-h">
+        <p class="kicker">Provenance</p>
+        <h2 id="honesty-h">How honest is this?</h2>
+        <p>Each claim in the guide carries a tag so you can weigh it. Two tags, plainly defined:</p>
+        <div class="honesty__grid">
+          <div class="honesty__row">
+            <span class="chip chip--sage">confirmed-primary</span>
+            <p>The claim traces directly to Boris Cherny, Cat Wu, or Anthropic: their own talk, post, or documentation.</p>
+          </div>
+          <div class="honesty__row">
+            <span class="chip chip--clay">confirmed-secondary</span>
+            <p>The claim appears only in third-party coverage, so it is reported faithfully but one step removed from the source.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="action" aria-labelledby="action-h">
+        <p class="kicker">Go deeper</p>
+        <h2 id="action-h">Read the knowledge base</h2>
+        <a class="btn" href="https://github.com/cocodedk/loop-engineering">
+          Read the full knowledge base on GitHub
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Apache-2.0 · © 2026 <a href="https://cocode.dk" target="_blank" rel="noreferrer">Cocode</a> · Compiled by <a href="https://linkedin.com/in/babakbandpey" target="_blank" rel="noreferrer">Babak Bandpey</a>
+      </p>
+    </footer>
+  </div>
+</body>
+</html>

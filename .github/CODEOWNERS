@@ -1,0 +1,6 @@
+# CODEOWNERS — default reviewer for all paths in this repository.
+# When branch protection requires code-owner reviews, the owner(s) listed
+# here are automatically requested for review on matching pull requests.
+# The last matching pattern wins, so the catch-all below applies repo-wide.
+
+* @cocodedk

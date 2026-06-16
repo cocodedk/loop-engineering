@@ -1,0 +1,26 @@
+# Loop Engineering
+
+> A fact-checked knowledge base on Boris Cherny's "loop" methodology for running Claude Code.
+
+"The loop" is how Boris Cherny (Head of Claude Code at Anthropic) runs the tool today: instead of prompting turn by turn, he writes small programs that prompt Claude on his behalf, read the output, decide whether the task is done, and re-prompt with updated context until a goal is met. This repository compiles his public talks, posts, and Anthropic's docs into focused topic files, tagging each claim by how well it is sourced.
+
+## Docs
+
+- [README.md](README.md): Thesis, TL;DR, and index into the docs/ topic files.
+- [docs/01-who-is-boris-cherny.md](docs/01-who-is-boris-cherny.md): Who Cherny is — Head of Claude Code, author of Programming TypeScript, his Meta/Instagram career and Cursor detour.
+- [docs/02-what-is-the-loop.md](docs/02-what-is-the-loop.md): Definition of "the loop" and how "loop engineering" became a named pattern; who coined what.
+- [docs/03-three-stages.md](docs/03-three-stages.md): The three waves of abstraction — autocomplete, parallel manual sessions, autonomous loops.
+- [docs/04-loop-anatomy.md](docs/04-loop-anatomy.md): Anatomy of a loop — trigger, scope, action, budget, stop, report, plus generator and evaluator roles.
+- [docs/05-verification-and-memory.md](docs/05-verification-and-memory.md): Verification as "can the agent run the thing" and turning mistakes into durable CLAUDE.md/skill corrections.
+- [docs/06-orchestration-and-tooling.md](docs/06-orchestration-and-tooling.md): Orchestration and the documented Claude Code primitives that implement the methodology.
+- [docs/07-receipts-and-timeline.md](docs/07-receipts-and-timeline.md): Receipts and timeline — dates, PR counts, and exact numbers, each tagged by verification verdict.
+- [docs/08-how-to-apply.md](docs/08-how-to-apply.md): How to apply the methodology yourself with real, documented Claude Code features.
+- [docs/09-example-loops.md](docs/09-example-loops.md): Example loops Cherny and team run — PR babysitting, Slack feedback, post-merge sweeps, PR pruning.
+- [docs/10-sources.md](docs/10-sources.md): Full annotated source list — primary posts, talks, and secondary coverage.
+- [docs/11-caveats.md](docs/11-caveats.md): Caveats — what is confirmed-primary, what is only confirmed-secondary, and what is unverifiable.
+
+## Notes
+
+- Claims are tagged by verification verdict: confirmed-primary (Cherny / Anthropic directly), confirmed-secondary (third-party coverage only), disputed, or unverifiable.
+- "Loop engineering" as a named term was coined and popularized by third parties (e.g. Peter Steinberger, Addy Osmani), not by Boris Cherny himself.
+- Compiled 2026-06-16 from public talks, X/Threads posts, and Claude Code docs; this is a documentation-only research deliverable with no source code.

@@ -1,0 +1,60 @@
+/* ---------- motion: orchestrated page load ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .fade-up {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .d1 { animation-delay: 0.05s; }
+  .d2 { animation-delay: 0.18s; }
+  .d3 { animation-delay: 0.32s; }
+  .d4 { animation-delay: 0.46s; }
+  .d5 { animation-delay: 0.60s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* blinking amber cursor */
+  .cursor {
+    animation: blink 1.05s steps(2, start) infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* loop glyph rotates once on load */
+  .hero__glyph {
+    animation: spinOnce 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  }
+  @keyframes spinOnce {
+    from { transform: rotate(-180deg); opacity: 0; }
+    to { transform: rotate(0deg); opacity: 0.07; }
+  }
+}
+
+/* ---------- breakpoints (mobile-first) ---------- */
+@media (min-width: 640px) {
+  body { font-size: 18px; }
+  .chapter {
+    grid-template-columns: 3rem 1fr;
+    padding-inline: 0.6rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .honesty__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hero__glyph {
+    top: -3rem;
+    right: -3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .wrap {
+    padding-inline: 0;
+  }
+}

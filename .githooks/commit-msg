@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+MSG=$(cat "$1")
+if ! echo "$MSG" | grep -qE '^(feat|fix|chore|docs|style|refactor|test|ci|build|perf|revert)(\(.+\))?: .+'; then
+  echo "ERROR: Commit message must follow Conventional Commits."
+  echo "  Example: docs: add loop anatomy chapter"
+  echo "  Types: feat|fix|chore|docs|style|refactor|test|ci|build|perf|revert"
+  exit 1
+fi

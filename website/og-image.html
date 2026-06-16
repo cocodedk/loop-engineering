@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loop Engineering — OG image</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { overflow: hidden; }
+    body {
+      width: 1200px;
+      height: 630px;
+      background-color: #16140f;
+      background-image:
+        radial-gradient(90% 80% at 50% -10%, rgba(232, 163, 61, 0.16), rgba(232, 163, 61, 0) 60%),
+        radial-gradient(70% 60% at 88% 100%, rgba(205, 138, 99, 0.08), rgba(205, 138, 99, 0) 55%);
+      color: #ece6d8;
+      position: relative;
+      font-family: "Fraunces", Georgia, serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 96px;
+    }
+    /* large faint amber loop glyph */
+    .glyph {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -52%);
+      width: 560px;
+      height: 560px;
+      color: #e8a33d;
+      opacity: 0.06;
+      z-index: 0;
+    }
+    .content { position: relative; z-index: 1; }
+    .eyebrow {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 22px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #e8a33d;
+      margin-bottom: 40px;
+    }
+    .thesis {
+      font-family: "Fraunces", serif;
+      font-weight: 300;
+      font-size: 76px;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: #ece6d8;
+      max-width: 1000px;
+    }
+    .subline {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 24px;
+      line-height: 1.5;
+      color: #9a917f;
+      margin-top: 40px;
+      max-width: 900px;
+    }
+    .footer {
+      position: absolute;
+      left: 96px;
+      bottom: 56px;
+      z-index: 1;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 20px;
+      letter-spacing: 0.04em;
+      color: #9a917f;
+    }
+  </style>
+</head>
+<body>
+  <svg class="glyph" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M23 12.5A8 8 0 1 0 24 16"/>
+    <path d="M23.4 8.6 24 12.8l-4.2.6"/>
+  </svg>
+
+  <div class="content">
+    <div class="eyebrow">LOOP ENGINEERING</div>
+    <div class="thesis">You write the loop that prompts the agent.</div>
+    <div class="subline">Boris Cherny's methodology for running Claude Code — a fact-checked field guide</div>
+  </div>
+
+  <div class="footer">Compiled by Babak Bandpey · cocode.dk</div>
+</body>
+</html>

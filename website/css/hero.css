@@ -1,0 +1,91 @@
+/* ---------- hero ---------- */
+.hero {
+  position: relative;
+  margin-top: 0;
+}
+
+/* big faint rotating loop glyph behind the hero */
+.hero__glyph {
+  position: absolute;
+  top: -2.5rem;
+  right: -2rem;
+  width: clamp(180px, 60vw, 360px);
+  height: auto;
+  color: var(--amber);
+  opacity: 0.07;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero > *:not(.hero__glyph) {
+  position: relative;
+  z-index: 1;
+}
+
+.hero__thesis {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.1rem, 9vw, 3.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 1rem 0 1.75rem;
+  color: var(--ink);
+}
+
+.hero__thesis em {
+  font-style: italic;
+  color: var(--amber);
+  font-weight: 400;
+}
+
+/* canonical quote callout */
+.callout {
+  border: 1px solid var(--hair);
+  border-left: 2px solid var(--amber);
+  background: var(--bg-raised);
+  border-radius: 4px;
+  padding: 1.25rem 1.25rem 1.1rem;
+  margin: 0;
+}
+
+.callout__quote {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ink);
+  margin: 0;
+}
+
+.callout__quote::before {
+  content: "> ";
+  color: var(--amber-soft);
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 0.15em;
+  background: var(--amber);
+  vertical-align: text-bottom;
+  translate: 0 0.12em;
+}
+
+.callout__by {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--hair);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+
+.callout__by cite {
+  font-style: normal;
+  color: var(--ink);
+}
