@@ -1,0 +1,8 @@
+{
+  "goal_file": "prompt.md",
+  "gate": { "type": "human" },
+  "inputs": ["{{INPUT}}"],
+  "outputs": [],
+  "engine": { "max": 1, "tools": "Read" },
+  "next": null
+}

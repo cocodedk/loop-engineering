@@ -32,10 +32,11 @@
 
 ## Run it — the `agent-loop` skill
 
-Reading the method is one thing; running it is another. **`agent-loop`** is a
-companion Claude Code skill that turns this knowledge base into something you can
-run. It triggers on phrasings like *"loop until the tests pass"* or *"keep going
-until the build is green"* — even when you never say the word "loop."
+Reading the method is one thing; running it is another. This repo ships
+**`agent-loop`** in [`skill/agent-loop/`](skill/agent-loop/) — a Claude Code skill
+that turns this knowledge base into something you can run. It triggers on phrasings
+like *"loop until the tests pass"* or *"keep going until the build is green"* —
+even when you never say the word "loop."
 
 **One loop.** Give it a goal and a verification gate — a test, a build, a runnable
 check. It runs an `act → verify → re-prompt` cycle until the gate passes or a
@@ -43,8 +44,9 @@ budget ceiling stops it. Verification is the engine: the loop only advances when
 reality says it did.
 
 ```bash
-verify-loop.sh --goal "fix the failing auth tests, root cause only" \
-               --verify "pytest tests/auth -q" --max 10
+skill/agent-loop/scripts/verify-loop.sh \
+  --goal "fix the failing auth tests, root cause only" \
+  --verify "pytest tests/auth -q" --max 10
 ```
 
 **A chain of loops.** For a larger objective ("create user manuals"), it
@@ -54,9 +56,16 @@ join before continuing. Each loop is a self-contained, reusable folder that
 verifies its own step and hands off to the next, so starting any loop runs forward
 to the end; a human signs off at the terminal stage.
 
+```bash
+skill/agent-loop/scripts/run-chain.sh .agent-loops/user-manuals
+```
+
 Gates are hybrid: an objective check where one exists, an LLM-judge against a
-rubric where it doesn't, and a human at the end. The runnable patterns it automates
-are in [docs/09-example-loops.md](docs/09-example-loops.md).
+rubric where it doesn't, and a human at the end. See
+[`skill/agent-loop/SKILL.md`](skill/agent-loop/SKILL.md) and
+[`skill/agent-loop/references/chains.md`](skill/agent-loop/references/chains.md)
+for the full skill, and [docs/09-example-loops.md](docs/09-example-loops.md) for
+the patterns it automates.
 
 ## Author
 
