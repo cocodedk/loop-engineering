@@ -1,5 +1,6 @@
 ---
 name: agent-loop
+version: 0.1.0
 description: Run a disciplined, verification-gated autonomous loop on the current project — Boris Cherny's "I write loops" methodology made runnable. Use whenever the user wants Claude to keep working on its own until a goal holds: "run a loop", "loop until the tests pass", "keep going until the build is green", "fix all of these until the suite is clean", "babysit this until it's done", "run this autonomously", "set up a self-verifying loop", "iterate until X", or references agent loops / loop engineering / Cherny's methodology. Trigger even when the user never says the word "loop" — any "keep doing X until condition Y holds, then stop" request is a loop. This skill picks the right primitive (/goal, a `claude -p` while-loop, a Stop hook, or a scheduled /loop), sets a budget ceiling, isolates parallel work in git worktrees, and keeps the human in the judgment seat. It also DECOMPOSES a large objective into a chain of smaller loops when one loop isn't enough — fires on "create user manuals", "break this objective into steps", "turn this into a pipeline of loops", or any multi-stage deliverable whose stages fan out over many items (one loop per page, screen, or endpoint).
 argument-hint: [goal, e.g. "all tests in api/ pass and lint is clean"]
 ---
