@@ -11,6 +11,31 @@ tweak that changes nothing about the interface.
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-06-17
+
+Hardening of the single-loop gate, learned from running a real flaky-suite loop.
+
+### Added
+- `verify-loop.sh` **red-first guard**: runs the gate before any change and refuses to
+  start if it is already green — a gate that passes for the wrong reason (typo'd path,
+  doesn't exercise the bug) otherwise "succeeds" having done nothing. `--allow-green-start`
+  opts out (exit code 3 = green-before-change).
+- `verify-loop.sh` flags: `--reset-every N` (drop the session for fresh eyes when an
+  approach entrenches), `--escalate-model M` (last-ditch stronger model on the round
+  before a stall bail), `--worktree PATH` (run the whole loop on a throwaway branch),
+  `--log DIR` (write each iteration's verify output + git diff for an audit trail).
+- SKILL.md: gate-*validity* guidance (prove red-first; use behavioral/live-data gates
+  for correctness/security goals, not coverage); a flaky-gate diagnosis playbook
+  (measure the rate, separate infra-flake from real bug, state-guard/bisect); and the
+  `judge-loop.sh` LLM-judge gate + `loop-engine.sh` chain runner are now surfaced in the
+  primitive table / chain steps.
+
+### Changed
+- `verify-loop.sh` stall detection compares a **normalized failure signature** (failure
+  lines with paths/clock-times/durations/line-numbers/hex stripped, deduped) instead of
+  an exact-output hash — so it catches "no progress" even when the failure looks
+  cosmetically different each round (the case that previously burned the whole budget).
+
 ## [0.1.0] — 2026-06-16
 
 Initial release. The runnable companion to the loop-engineering knowledge base.
