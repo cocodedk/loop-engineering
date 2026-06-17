@@ -1,6 +1,6 @@
 ---
 name: agent-loop
-version: 0.1.0
+version: 0.2.0
 description: Run a disciplined, verification-gated autonomous loop on the current project — Boris Cherny's "I write loops" methodology made runnable. Use whenever the user wants Claude to keep working on its own until a goal holds: "run a loop", "loop until the tests pass", "keep going until the build is green", "fix all of these until the suite is clean", "babysit this until it's done", "run this autonomously", "set up a self-verifying loop", "iterate until X", or references agent loops / loop engineering / Cherny's methodology. Trigger even when the user never says the word "loop" — any "keep doing X until condition Y holds, then stop" request is a loop. This skill picks the right primitive (/goal, a `claude -p` while-loop, a Stop hook, or a scheduled /loop), sets a budget ceiling, isolates parallel work in git worktrees, and keeps the human in the judgment seat. It also DECOMPOSES a large objective into a chain of smaller loops when one loop isn't enough — fires on "create user manuals", "break this objective into steps", "turn this into a pipeline of loops", or any multi-stage deliverable whose stages fan out over many items (one loop per page, screen, or endpoint).
 argument-hint: [goal, e.g. "all tests in api/ pass and lint is clean"]
 ---
@@ -24,6 +24,16 @@ do" — it's **"how will the loop know it's done?"**
 If the project has no way to verify the goal (no tests, no build, no runnable
 check), stop and say so. Propose adding a check first. Looping without one is the
 single most common way these go wrong.
+
+**A gate proves only what it asserts — so validate the gate, don't just run it.**
+Two traps hide here: a gate green *for the wrong reason* (a typo'd test path, a check
+that never exercises the bug — 100% coverage with mocks has shipped real auth bugs
+past review), and a gate too shallow to catch a behavioral break. Two habits close
+both: **prove it red-first** — run the gate on the *unfixed* code and confirm it fails
+*for the right reason* before looping (`verify-loop.sh` does this by default and
+refuses a green start unless `--allow-green-start`); and for correctness- or
+security-critical goals make the gate **behavioral / live-data** (drive the real
+endpoint, assert the real contract), not coverage.
 
 ## Before you loop — the 60-second setup
 
@@ -52,6 +62,7 @@ the loop until the gate and ceiling exist.
 | Scriptable / headless / CI / a budget you control | **`scripts/verify-loop.sh`** (a `claude -p` while-loop with a verify gate) | You own the control flow, the ceiling, and the failure handling. |
 | Deterministic "don't stop until green" | **Stop hook** (exit code 2 keeps the session going) | The same mechanism `/goal` wraps; use it when you need custom termination logic. |
 | Recurring / watch-for-work / runs while you're away | **`/loop`** (interval) or a cloud routine | "Every 30m, draft fix PRs for new bug issues." Polls or schedules instead of running once. |
+| A step with NO objective check (prose, design, "is this good enough?") | **`scripts/judge-loop.sh`** (LLM-judge gate) | A *separate* Claude scores the result against a rubric and returns pass/fail — independent verification when no shell command can decide. |
 
 Read `references/primitives.md` for the exact flags, caveats, and doc links for each
 of these. Confirm flags against current Claude Code docs — they change between
@@ -81,6 +92,14 @@ The cycle each iteration: **act** (Claude edits) → **verify** (run the gate) �
 feed the result back → **check budget** → stop or continue. The verify command is
 the brake and the steering wheel.
 
+Safety flags worth knowing (`--help` lists all): `--stall N` bails after N no-progress
+rounds (compared by *normalized signature*, not exact output, so it still catches a
+loop that fails differently each round); `--reset-every N` drops the session for fresh
+eyes when an approach entrenches; `--escalate-model M` makes a last-ditch stronger-model
+attempt before a stall bail; `--worktree PATH` runs the loop on a throwaway branch;
+`--log DIR` writes each iteration's verify output + diff as an audit trail;
+`--allow-green-start` skips the red-first guard.
+
 ## Stay in the judgment seat
 
 The loop produces *candidates*, not merged truth. Your job doesn't disappear, it
@@ -102,8 +121,13 @@ babysitter. Treat recurring corrections as a signal to update memory, not to re-
 - **Lint-only verification** — green lint, broken code. Run the actual thing.
 - **No budget ceiling** — an unattended loop with no max burns the whole budget on a
   stuck problem. Always cap iterations; consider bailing after N identical failures.
-- **A flaky gate** — a nondeterministic test makes the loop thrash forever. Stabilize
-  the check before you loop on it.
+- **A flaky gate** — a nondeterministic check makes the loop thrash, and worse, tempts
+  it to "fix" the *symptom* of a flake instead of a bug. Stabilize it *first*: measure
+  the flake rate (run the gate N times), then separate an **infra flake** (parallel
+  test-DB races, ports, shared state, test ordering) from a **real bug**. To pin the
+  cause, add a state-guard — snapshot the global before/after each test to catch the
+  mutator — or bisect; a flake that fails on a *different* test each run is usually one
+  shared-state root cause, not many.
 - **Verifying with the context that wrote the code** — a fresh check (a separate run,
   a Stop hook, a real command) catches what the author missed.
 
@@ -121,10 +145,11 @@ case, build a **loop chain** instead of a single loop:
 2. **Show the plan and get approval** before building anything.
 3. **Build it** — write `chain.json` and instantiate the backbone from the
    template library with `scripts/scaffold-loop.sh`.
-4. **Run it** — `scripts/run-chain.sh <workspace>` drives the chain: linear stages
-   self-verify, fan-out stages run their sub-loops in parallel and join, and the
-   terminal stage pauses for your sign-off. Resumable; start mid-chain with
-   `--from <stage>`.
+4. **Run it** — `scripts/run-chain.sh <workspace>` drives the chain (one loop at a
+   time via `scripts/loop-engine.sh`, whose gate can be **script** | **judge** |
+   **human**): linear stages self-verify, fan-out stages run their sub-loops in
+   parallel and join, and the terminal stage pauses for your sign-off. Resumable;
+   start mid-chain with `--from <stage>`.
 
 Each loop lives in its own folder with its own files and is reusable; loops share
 data only through `state/`. **Read `references/chains.md` for the schemas, runtime,
