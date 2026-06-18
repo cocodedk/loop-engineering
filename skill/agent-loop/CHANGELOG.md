@@ -11,6 +11,52 @@ tweak that changes nothing about the interface.
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-06-18
+
+Lessons banked from running a real 4-stage loop chain (rebuilding a product's user
+manual). The chain over-delivered on teaching us where the skill was thin.
+
+### Added
+- **Per-stage effort/model.** `verify-loop.sh` + `judge-check.sh` take `--effort`
+  (`low`…`max`); `loop-engine.sh` threads `engine.effort` / `engine.model` from
+  `loop.json` to the script-gate runner. A chain ran every stage at the default
+  effort — mechanical and judgment stages alike — with no knob to change it.
+- **Visual-judge recipe** (SKILL.md): for a *visual* deliverable, render the result
+  to a PNG in `verify.sh`, then point the rubric at the image — `judge-check.sh`'s
+  reviewer uses Read, which VIEWS images, so it rules on look-and-feel. Proven: a
+  design loop's judge viewed the rendered pages and bounced its first redesign.
+
+### Changed
+- `judge-check.sh` now **robustly recovers the verdict object** from a judge that
+  narrates or fences its JSON (was a bare `jq` parse → false-negative gate failures
+  when the judge added prose). Reads the REAL verdict; a `pass:false` still fails.
+
+### Documented (anti-patterns / gotchas)
+- **A gate the loop can edit** is the sharpest new anti-pattern — a design loop, hitting
+  the false-negative above, edited the judge script *itself*. That time a legit fix, but
+  the capability is the risk; keep gate + skill scripts out of the loop's writable scope
+  and diff them after a run.
+- **Bake project conventions (file-size cap, ruff, type-check) into stage gates** — a
+  stage with no lint gate shipped a 1121-line file.
+- **Declare a real artifact as a stage output**, not the engine's `state/.done/<id>`
+  marker (spurious "output missing" warnings otherwise).
+- **The terminal stage must be `human`** (or `--allow-green-start`) — a redundant final
+  script gate is green-before-change and trips the red-first guard (exit 3).
+
+## [0.3.1] — 2026-06-18
+
+### Fixed
+
+- `judge-check.sh` now robustly recovers the verdict object from the judge's
+  `.result`. The judge is a separate Claude run that routinely narrates and/or
+  wraps its JSON in a ```` ```json ```` fence, so `.result` was prose + JSON, not a
+  bare object — `jq -r '.result' | jq '.pass'` failed to parse and every green
+  attempt reported "judge returned no parseable verdict" regardless of the real
+  verdict. A small `python3` extractor scans for fenced/balanced/greedy JSON
+  candidates and picks the last that validates as an object with a `pass` key.
+  The gate is unchanged: a `pass:false` verdict still FAILS, and truly empty
+  output still reports "no parseable verdict". Adds a `python3` dependency.
+
 ## [0.3.0] — 2026-06-18
 
 Compound gates — a script gate alone can't catch what tests don't assert. Learned

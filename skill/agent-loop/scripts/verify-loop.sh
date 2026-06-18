@@ -35,7 +35,7 @@
 set -euo pipefail
 
 GOAL="" VERIFY="" MAX=10 TOOLS="Read,Edit,Bash" STALL=3 DRY=0
-RESET_EVERY=0 MODEL="" ESCALATE_MODEL="" WORKTREE="" LOGDIR="" ALLOW_GREEN=0
+RESET_EVERY=0 MODEL="" EFFORT="" ESCALATE_MODEL="" WORKTREE="" LOGDIR="" ALLOW_GREEN=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --goal) GOAL="$2"; shift 2 ;;
@@ -45,6 +45,7 @@ while [ $# -gt 0 ]; do
     --stall) STALL="$2"; shift 2 ;;
     --reset-every) RESET_EVERY="$2"; shift 2 ;;
     --model) MODEL="$2"; shift 2 ;;
+    --effort) EFFORT="$2"; shift 2 ;;
     --escalate-model) ESCALATE_MODEL="$2"; shift 2 ;;
     --worktree) WORKTREE="$2"; shift 2 ;;
     --log) LOGDIR="$2"; shift 2 ;;
@@ -130,6 +131,7 @@ while [ "$iter" -lt "$MAX" ]; do
   use_model="$MODEL"
   [ -n "$ESCALATE_MODEL" ] && [ "$stall_count" -ge $((STALL - 1)) ] && use_model="$ESCALATE_MODEL"
   mflag=(); [ -n "$use_model" ] && mflag=(--model "$use_model")
+  eflag=(); [ -n "$EFFORT" ] && eflag=(--effort "$EFFORT")
 
   prompt="Goal: $GOAL
 
@@ -138,10 +140,10 @@ weaken, skip, or delete the check to make it pass. Failure output:
 $GATE_OUT"
 
   if [ -z "$session" ]; then
-    session="$(claude -p "$prompt" "${mflag[@]}" --allowedTools "$TOOLS" --output-format json | jq -r '.session_id')"
+    session="$(claude -p "$prompt" "${mflag[@]}" "${eflag[@]}" --allowedTools "$TOOLS" --output-format json | jq -r '.session_id')"
     [ -n "$session" ] && [ "$session" != "null" ] || { echo "error: no session_id from claude" >&2; exit 1; }
   else
-    claude -p "$prompt" "${mflag[@]}" --allowedTools "$TOOLS" --resume "$session" >/dev/null
+    claude -p "$prompt" "${mflag[@]}" "${eflag[@]}" --allowedTools "$TOOLS" --resume "$session" >/dev/null
   fi
 
   # Re-run the gate to test this iteration's fix.

@@ -65,7 +65,7 @@ and only advances when **all** pass (the join).
   "gate": {"type": "script", "verify": "bash \"$LOOP_DIR/verify.sh\""},
   "inputs":  ["state/pages.json"],
   "outputs": ["state/toc.json"],
-  "engine":  {"max": 6, "tools": "Read,Write,Edit,Bash"},
+  "engine":  {"max": 6, "tools": "Read,Write,Edit,Bash", "effort": "high", "model": ""},
   "next": "03-pages"
 }
 ```
@@ -77,7 +77,18 @@ and only advances when **all** pass (the join).
   loop keeps its budget ceiling and stall detection.
 - **inputs/outputs** are the data contract. The engine refuses to start a loop
   whose declared inputs are missing, and warns if a passed loop didn't produce its
-  outputs. This is what makes loops independently runnable and resumable.
+  outputs. This is what makes loops independently runnable and resumable. Declare a
+  REAL artifact (e.g. `build/manual.html`) as the output — NOT the engine's own
+  `state/.done/<stage>` marker, or every stage logs a spurious "output missing"
+  warning (the engine owns that marker itself).
+- **engine.effort / engine.model** (optional) set per-stage reasoning effort
+  (`low`…`max`) and model; default = claude's session default. Set `effort` high on
+  the hard judgment stages (design, judge), low on mechanical ones — otherwise the
+  chain pays judgment effort for a file copy and vice-versa.
+- **The terminal stage must be `human`** (or pass `--allow-green-start`). A final
+  "review" stage whose *script* gate merely re-checks what earlier stages produced is
+  green before the loop changes anything → the red-first guard correctly refuses it
+  (exit 3). Make it a `human` sign-off, not a redundant script gate.
 
 ## Runtime
 
