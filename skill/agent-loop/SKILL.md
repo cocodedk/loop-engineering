@@ -1,6 +1,6 @@
 ---
 name: agent-loop
-version: 0.3.0
+version: 0.4.0
 description: Run a disciplined, verification-gated autonomous loop on the current project — Boris Cherny's "I write loops" methodology made runnable. Use whenever the user wants Claude to keep working on its own until a goal holds: "run a loop", "loop until the tests pass", "keep going until the build is green", "fix all of these until the suite is clean", "babysit this until it's done", "run this autonomously", "set up a self-verifying loop", "iterate until X", or references agent loops / loop engineering / Cherny's methodology. Trigger even when the user never says the word "loop" — any "keep doing X until condition Y holds, then stop" request is a loop. This skill picks the right primitive (/goal, a `claude -p` while-loop, a Stop hook, or a scheduled /loop), sets a budget ceiling, isolates parallel work in git worktrees, and keeps the human in the judgment seat. It also DECOMPOSES a large objective into a chain of smaller loops when one loop isn't enough — fires on "create user manuals", "break this objective into steps", "turn this into a pipeline of loops", or any multi-stage deliverable whose stages fan out over many items (one loop per page, screen, or endpoint).
 argument-hint: [goal, e.g. "all tests in api/ pass and lint is clean"]
 ---
@@ -47,6 +47,16 @@ rubric.md`); the judge only fires once the tests pass, so it costs ~one model ca
 green attempt. It MUST be a separate run from the one that wrote the code — the author
 judges its own work poorly. (Real case: a loop's tests passed but it billed the wrong
 API key on one un-tested code path; only an independent review caught it.)
+
+**Visual / subjective deliverables — render, then let the judge SEE it.** A judge reading
+HTML/CSS can't tell whether a page *looks* good. But `judge-check.sh`'s reviewer uses Read,
+which VIEWS images — so for a visual goal, have the gate render the result to a PNG, then
+point the rubric at that file ("view `build/page-*.png`; FAIL if it looks auto-generated").
+Proven: a manual-design loop's judge viewed the rendered pages and bounced its first
+redesign. And fold the project's OWN conventions into the gate — file-size cap, `ruff`/lint,
+type-check — because a stage with no lint gate happily ships a 1000-line file (seen for real).
+Give the judge stage a higher `effort` (per-stage `engine.effort` / `--effort`); the
+mechanical stages can stay low.
 
 ## Before you loop — the 60-second setup
 
@@ -143,6 +153,13 @@ babysitter. Treat recurring corrections as a signal to update memory, not to re-
   shared-state root cause, not many.
 - **Verifying with the context that wrote the code** — a fresh check (a separate run,
   a Stop hook, a real command) catches what the author missed.
+- **A gate the loop can edit** — if the loop has write access to its own gate (the verify
+  script, the rubric, or a skill script referenced by absolute path), it can make a red
+  gate green by *weakening the check* instead of doing the work. Keep gate + skill scripts
+  OUTSIDE the loop's writable scope (read-only, or a path its tools can't reach), and diff
+  them after a run. Seen for real: a design loop whose judge gate gave false negatives
+  edited the judge script itself — that time a legitimate fix, but the *capability* is the
+  risk, and you only know which by reviewing the diff.
 
 ## Decompose a big objective into a loop chain
 

@@ -43,10 +43,15 @@ else
 
   goal="$(cat "$LOOP_DIR/$(j '.goal_file // "prompt.md"')" 2>/dev/null || j '.goal // ""')"
   max="$(j '.engine.max // 8')"; tools="$(j '.engine.tools // "Read,Edit,Bash"')"
+  # Per-stage reasoning effort / model (default = claude's session default): set
+  # engine.effort high on the hard judgment stages, low on mechanical ones.
+  effort="$(j '.engine.effort // ""')"; model="$(j '.engine.model // ""')"
+  eopt=(); [ -n "$effort" ] && eopt=(--effort "$effort")
+  mopt=(); [ -n "$model" ] && mopt=(--model "$model")
   cd "$WORKSPACE"
   case "$gate" in
     script)
-      "$HERE/verify-loop.sh" --goal "$goal" --verify "$(j '.gate.verify')" --max "$max" --tools "$tools"
+      "$HERE/verify-loop.sh" --goal "$goal" --verify "$(j '.gate.verify')" --max "$max" --tools "$tools" "${eopt[@]}" "${mopt[@]}"
       ;;
     judge)
       "$HERE/judge-loop.sh" --goal "$goal" --rubric "$LOOP_DIR/$(j '.gate.rubric // "rubric.md"')" --max "$max" --tools "$tools"
