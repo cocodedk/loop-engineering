@@ -11,6 +11,26 @@ tweak that changes nothing about the interface.
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-06-18
+
+Compound gates — a script gate alone can't catch what tests don't assert. Learned
+from a loop whose tests passed but billed the wrong API key on an un-tested path; an
+independent review caught it after the loop, not during.
+
+### Added
+- `scripts/judge-check.sh`: a ONE-SHOT independent-judge GATE (vs `judge-loop.sh`'s
+  loop). A separate Claude adversarially reviews the working tree + `git diff` against
+  a rubric → exit 0 PASS / 1 FAIL with feedback. Designed to chain in a stage's
+  `verify.sh` after the objective tests: `run-tests && judge-check.sh --rubric rubric.md`.
+- Compound script+judge gating in the `transform` + `per-item` templates: `verify.sh`
+  now runs `judge-check.sh` automatically iff the stage carries a `rubric.md`, so a
+  non-trivial / correctness-critical stage becomes script AND judge just by adding a
+  rubric. `scaffold-loop.sh` substitutes `{{SCRIPTS}}` (the skill scripts dir) so the
+  scaffolded gate can call the shared judge by path.
+- SKILL.md gate-validity: "when tests can't see the bug, put a judge in the gate" —
+  the judge catches missed call-sites, scope/permission leaks, and self-weakened tests
+  that a script gate structurally cannot; it must be a separate run from the author.
+
 ## [0.2.0] — 2026-06-17
 
 Hardening of the single-loop gate, learned from running a real flaky-suite loop.
