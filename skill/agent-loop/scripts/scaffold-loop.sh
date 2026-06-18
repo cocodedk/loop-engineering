@@ -30,6 +30,11 @@ for kv in ${SETS[@]+"${SETS[@]}"}; do
     | xargs -0 -r sed -i "s|{{$k}}|$ev|g"
 done
 
+# Always expose the skill's scripts dir so a stage's verify.sh can call shared gates
+# (e.g. judge-check.sh for a compound script+judge gate) by absolute path.
+find "$DEST" -type f \( -name '*.json' -o -name '*.md' -o -name '*.sh' \) -print0 \
+  | xargs -0 -r sed -i "s|{{SCRIPTS}}|$(esc "$HERE")|g"
+
 # self-chaining entrypoint: run this loop, then (on success) the next one
 printf '#!/usr/bin/env bash\nexec %q "$(cd "$(dirname "$0")" && pwd)" "$@"\n' "$HERE/loop-engine.sh" > "$DEST/run.sh"
 chmod +x "$DEST/run.sh"

@@ -1,6 +1,6 @@
 ---
 name: agent-loop
-version: 0.2.0
+version: 0.3.0
 description: Run a disciplined, verification-gated autonomous loop on the current project — Boris Cherny's "I write loops" methodology made runnable. Use whenever the user wants Claude to keep working on its own until a goal holds: "run a loop", "loop until the tests pass", "keep going until the build is green", "fix all of these until the suite is clean", "babysit this until it's done", "run this autonomously", "set up a self-verifying loop", "iterate until X", or references agent loops / loop engineering / Cherny's methodology. Trigger even when the user never says the word "loop" — any "keep doing X until condition Y holds, then stop" request is a loop. This skill picks the right primitive (/goal, a `claude -p` while-loop, a Stop hook, or a scheduled /loop), sets a budget ceiling, isolates parallel work in git worktrees, and keeps the human in the judgment seat. It also DECOMPOSES a large objective into a chain of smaller loops when one loop isn't enough — fires on "create user manuals", "break this objective into steps", "turn this into a pipeline of loops", or any multi-stage deliverable whose stages fan out over many items (one loop per page, screen, or endpoint).
 argument-hint: [goal, e.g. "all tests in api/ pass and lint is clean"]
 ---
@@ -34,6 +34,19 @@ both: **prove it red-first** — run the gate on the *unfixed* code and confirm 
 refuses a green start unless `--allow-green-start`); and for correctness- or
 security-critical goals make the gate **behavioral / live-data** (drive the real
 endpoint, assert the real contract), not coverage.
+
+**When tests can't see the bug, put a judge in the gate.** Even a behavioral,
+red-first test only checks what it asserts — it can't catch a requirement wired in one
+place but missed at another call-site, a scope/permission leak, or a loop that quietly
+weakened its own tests. For non-trivial or correctness-/security-critical stages, make
+the gate **script AND judge**: the objective tests PLUS an independent reviewer
+(`scripts/judge-check.sh`) that adversarially reads the diff against a rubric and fails
+with feedback the loop then acts on. Drop a `rubric.md` into the stage folder and the
+scaffolded `verify.sh` runs it automatically (`run-tests && judge-check.sh --rubric
+rubric.md`); the judge only fires once the tests pass, so it costs ~one model call per
+green attempt. It MUST be a separate run from the one that wrote the code — the author
+judges its own work poorly. (Real case: a loop's tests passed but it billed the wrong
+API key on one un-tested code path; only an independent review caught it.)
 
 ## Before you loop — the 60-second setup
 
@@ -140,8 +153,9 @@ case, build a **loop chain** instead of a single loop:
 1. **Plan it** — restate the objective, then run an ultracode/Workflow pass to
    decide the ordered stages, each with a goal, a verification gate, declared
    inputs/outputs, and a `next`. Mark stages that fan out (one sub-loop per page /
-   screen / endpoint). The planner fixes the stage skeleton; fan-out counts are
-   discovered at runtime.
+   screen / endpoint), and mark non-trivial / correctness-critical stages to get a
+   `rubric.md` (a compound script+judge gate — see "put a judge in the gate" above).
+   The planner fixes the stage skeleton; fan-out counts are discovered at runtime.
 2. **Show the plan and get approval** before building anything.
 3. **Build it** — write `chain.json` and instantiate the backbone from the
    template library with `scripts/scaffold-loop.sh`.
