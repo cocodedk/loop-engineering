@@ -1,7 +1,7 @@
 ---
 name: agent-loop
-version: 0.4.0
-description: Run a disciplined, verification-gated autonomous loop on the current project — Boris Cherny's "I write loops" methodology made runnable. Use whenever the user wants Claude to keep working on its own until a goal holds: "run a loop", "loop until the tests pass", "keep going until the build is green", "fix all of these until the suite is clean", "babysit this until it's done", "run this autonomously", "set up a self-verifying loop", "iterate until X", or references agent loops / loop engineering / Cherny's methodology. Trigger even when the user never says the word "loop" — any "keep doing X until condition Y holds, then stop" request is a loop. This skill picks the right primitive (/goal, a `claude -p` while-loop, a Stop hook, or a scheduled /loop), sets a budget ceiling, isolates parallel work in git worktrees, and keeps the human in the judgment seat. It also DECOMPOSES a large objective into a chain of smaller loops when one loop isn't enough — fires on "create user manuals", "break this objective into steps", "turn this into a pipeline of loops", or any multi-stage deliverable whose stages fan out over many items (one loop per page, screen, or endpoint).
+version: 0.5.0
+description: Use whenever the user wants Claude to keep working on its own until a goal holds: "run a loop", "loop until the tests pass", "keep going until the build is green", "fix all of these until the suite is clean", "babysit this until it's done", "run this autonomously", "set up a self-verifying loop", "iterate until X", or references agent loops / loop engineering / Boris Cherny's "I write loops" methodology. Trigger even when the user never says the word "loop" — any "keep doing X until condition Y holds, then stop" request is a loop. Also use for a large multi-stage objective — "create user manuals", "break this objective into steps", "turn this into a pipeline of loops", or any deliverable whose stages fan out over many items (one loop per page, screen, or endpoint).
 argument-hint: [goal, e.g. "all tests in api/ pass and lint is clean"]
 ---
 
@@ -48,15 +48,11 @@ green attempt. It MUST be a separate run from the one that wrote the code — th
 judges its own work poorly. (Real case: a loop's tests passed but it billed the wrong
 API key on one un-tested code path; only an independent review caught it.)
 
-**Visual / subjective deliverables — render, then let the judge SEE it.** A judge reading
-HTML/CSS can't tell whether a page *looks* good. But `judge-check.sh`'s reviewer uses Read,
-which VIEWS images — so for a visual goal, have the gate render the result to a PNG, then
-point the rubric at that file ("view `build/page-*.png`; FAIL if it looks auto-generated").
-Proven: a manual-design loop's judge viewed the rendered pages and bounced its first
-redesign. And fold the project's OWN conventions into the gate — file-size cap, `ruff`/lint,
-type-check — because a stage with no lint gate happily ships a 1000-line file (seen for real).
-Give the judge stage a higher `effort` (per-stage `engine.effort` / `--effort`); the
-mechanical stages can stay low.
+**Visual / subjective deliverables — render, then let the judge SEE it.** Have the gate
+render the result to a PNG and point the rubric at the image — `judge-check.sh`'s reviewer
+uses Read, which VIEWS images, so it can rule on look-and-feel. Fold the project's OWN
+conventions (lint, file-size cap, type-check) into the gate, and give judge stages a
+higher `effort` than mechanical ones. Full recipe + evidence: `references/gates.md`.
 
 ## Before you loop — the 60-second setup
 
@@ -64,7 +60,12 @@ Walk these five with the user (or infer and state your assumptions). Don't start
 the loop until the gate and ceiling exist.
 
 1. **Goal** — a *checkable* condition, not a vibe. "All tests in `api/` pass and
-   `ruff` is clean," not "make the API better."
+   `ruff` is clean," not "make the API better." Then name the goal's **forks** —
+   the readings you'd otherwise resolve silently ("fix the failing tests": fix the
+   code, or fix wrong tests? "migrate": exact behavior, or clean up too?). State
+   the 1–2 forks that change what the loop builds, pick a default, and bake it
+   into the goal prompt — an unattended loop resolves ambiguity alone, one
+   iteration at a time.
 2. **Verify command** — the shell command whose exit code is the gate. Discover it:
    inspect `package.json` scripts, `Makefile`, `pyproject.toml`/`pytest`, `gradlew`,
    `go test`, `cargo test`, or the CI workflow. Prefer "can the agent actually run
@@ -83,7 +84,7 @@ the loop until the gate and ceiling exist.
 |---|---|---|
 | Simplest, in-session, one goal | **`/goal <condition>`** | Claude loops turn after turn until a small fast model confirms the condition. Works headless too. Start here. |
 | Scriptable / headless / CI / a budget you control | **`scripts/verify-loop.sh`** (a `claude -p` while-loop with a verify gate) | You own the control flow, the ceiling, and the failure handling. |
-| Deterministic "don't stop until green" | **Stop hook** (exit code 2 keeps the session going) | The same mechanism `/goal` wraps; use it when you need custom termination logic. |
+| Deterministic "don't stop until green" | **Stop hook** (command hook: exit 2 blocks the stop; prompt/agent hook: return `{"ok": false}`) | The same mechanism `/goal` wraps; use it when you need custom termination logic. |
 | Recurring / watch-for-work / runs while you're away | **`/loop`** (interval) or a cloud routine | "Every 30m, draft fix PRs for new bug issues." Polls or schedules instead of running once. |
 | A step with NO objective check (prose, design, "is this good enough?") | **`scripts/judge-loop.sh`** (LLM-judge gate) | A *separate* Claude scores the result against a rubric and returns pass/fail — independent verification when no shell command can decide. |
 
@@ -130,6 +131,10 @@ moves up a level: review the diff or the PRs, kill runaway loops, and never let 
 loop auto-merge work you haven't looked at. Cherny: "if the code sucks, we're not
 gonna merge it." Set the gate, set the ceiling, then judge the output.
 
+Make the loop hand you *decisions*, not just diffs: have the goal prompt say "log
+anything you resolve that the goal doesn't specify, and why, to `decisions.md`". Review
+that log first — the judge-script edit (anti-patterns) was caught only by diff archaeology.
+
 ## Compound — make the loop smarter over time
 
 The highest-leverage habit: every time the loop makes the *same* mistake twice,
@@ -145,12 +150,8 @@ babysitter. Treat recurring corrections as a signal to update memory, not to re-
 - **No budget ceiling** — an unattended loop with no max burns the whole budget on a
   stuck problem. Always cap iterations; consider bailing after N identical failures.
 - **A flaky gate** — a nondeterministic check makes the loop thrash, and worse, tempts
-  it to "fix" the *symptom* of a flake instead of a bug. Stabilize it *first*: measure
-  the flake rate (run the gate N times), then separate an **infra flake** (parallel
-  test-DB races, ports, shared state, test ordering) from a **real bug**. To pin the
-  cause, add a state-guard — snapshot the global before/after each test to catch the
-  mutator — or bisect; a flake that fails on a *different* test each run is usually one
-  shared-state root cause, not many.
+  it to "fix" the *symptom* of a flake instead of a bug. Stabilize it *first* — measure
+  the flake rate, split infra-flake from real bug; diagnosis playbook in `references/gates.md`.
 - **Verifying with the context that wrote the code** — a fresh check (a separate run,
   a Stop hook, a real command) catches what the author missed.
 - **A gate the loop can edit** — if the loop has write access to its own gate (the verify
@@ -188,6 +189,7 @@ planner procedure, and a worked user-manual example before building a chain.**
 
 ## Reference
 
+- `references/gates.md` — gate hygiene: the visual-judge recipe + flaky-gate diagnosis playbook.
 - `references/chains.md` — loop-chain schemas, runtime, planner procedure, example.
 - `references/loop-chains-design.md` — the approved design spec for loop chains.
 - `references/primitives.md` — the documented Claude Code primitives, with flags and caveats.

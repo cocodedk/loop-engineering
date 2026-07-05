@@ -28,18 +28,23 @@ The simplest way to "keep working until a condition holds." In-session (and head
 
 Claude works turn after turn; after each turn a small fast model checks whether the
 stated condition is met, and the loop continues until it is. Under the hood it is a
-prompt-based Stop hook. Start here unless you need custom control flow. Docs: `/docs/en/goal`.
+prompt-based Stop hook. Requires Claude Code v2.1.139+. Start here unless you need
+custom control flow. Docs: `/docs/en/goal`.
 
 ## Deterministic termination: Stop hooks
 
-A Stop hook runs when Claude is about to end its turn. **Exit code 2 prevents
-stopping and continues the conversation** — which is exactly a "don't stop until
-green" loop. Wire a hook that runs your verify command and exits 2 while it fails,
-0 when it passes. This is what `/goal` wraps; use it directly when you need custom
-termination logic. Docs: `/docs/en/hooks`.
+A Stop hook runs when Claude is about to end its turn. Two documented variants:
+
+- **Command hook** — your script runs the verify command; **exit code 2 blocks the
+  stop** and the stderr message is fed back to Claude as the next instruction.
+- **Prompt/agent hook** — returns `{"ok": false, "reason": "..."}` to keep the
+  session working; this is the documented "don't stop until green" pattern and
+  the mechanism `/goal` wraps.
+
+Use one directly when you need custom termination logic. Docs: `/docs/en/hooks-guide`.
 
 ```sh
-# Stop-hook sketch (configure in settings.json): block stop until tests pass.
+# Command Stop-hook sketch (configure in settings.json): block stop until tests pass.
 if npm test >/tmp/verify.log 2>&1; then exit 0; else
   echo "Tests still red; keep fixing. See /tmp/verify.log" >&2; exit 2
 fi

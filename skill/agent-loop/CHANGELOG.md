@@ -11,6 +11,42 @@ tweak that changes nothing about the interface.
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-07-05
+
+An unknowns-surfacing pass (via the surfacing-unknowns skill): an unattended loop
+is maximally exposed to the map-vs-territory gap — it resolves every ambiguity
+alone, one iteration at a time — so the goal's forks and the loop's judgment
+calls must be explicit and reviewable.
+
+### Added
+- **Goal forks** (60-second setup): before looping, name the 1–2 readings of the
+  goal you'd otherwise resolve silently ("fix the failing tests": fix the code,
+  or fix wrong tests?), pick a default, and bake it into the goal prompt.
+- **Decisions log** (judgment seat + worker templates): the loop appends every
+  goal-unspecified judgment call to `decisions.md` (`per-item` writes
+  `{{SLUG}}.decisions.md` — parallel fan-out workers must not share one file);
+  review decisions before diffs. The v0.4.0 judge-script edit was caught only by
+  diff archaeology; a decisions log surfaces such calls directly.
+- `references/gates.md` — gate hygiene: the full visual-judge recipe and the
+  flaky-gate diagnosis playbook, moved out of the core (which sat at 197/200
+  lines) behind summaries + pointers.
+
+### Changed
+- **Frontmatter description no longer summarizes the workflow** (it described
+  picking primitives, ceilings, worktrees, decomposition): superpowers' skill
+  testing shows agents follow a workflow-summarizing description INSTEAD of
+  reading the body. All trigger phrases kept; triggers-only now.
+- **Stop-hook wording corrected** (SKILL.md table + primitives.md): per current
+  docs, a command Stop hook blocks with exit 2 (stderr fed back), while
+  prompt/agent Stop hooks return `{"ok": false, "reason": …}` — the documented
+  "don't stop until green" pattern that `/goal` wraps.
+
+### Verified
+- All primitives re-checked against current Claude Code docs (2026-07-04):
+  `/goal` (requires v2.1.139+), `/loop`, `--worktree`/`-w`, headless `-p` +
+  `--resume` + `--output-format json`, `--allowedTools`, cloud routines
+  (research preview) — all current; only the Stop-hook nuance needed fixing.
+
 ## [0.4.0] — 2026-06-18
 
 Lessons banked from running a real 4-stage loop chain (rebuilding a product's user
