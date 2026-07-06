@@ -1,7 +1,28 @@
-# Gate hygiene — visual judges and flaky gates
+# Gate hygiene — assertions, visual judges, flaky gates
 
 Moved from the core `SKILL.md` (which stays under the 200-line cap); the pointers
-there lead here. Both sections are banked lessons from real loop runs.
+there lead here. All sections are banked lessons from real loop runs.
+
+## Designing the asserts: force outcomes, don't check shape
+
+The six-defect hunt behind the v0.6.0 anti-patterns survived 100% coverage
+because every assert checked *completion and shape* ("ran, parsed, non-empty"),
+never truth. When writing the gate's assertions:
+
+1. **Assert outcomes the domain forces, not presence.** "Retrieval returned ≥1
+   doc" is a shape check; "the labeled gold doc for THIS input appears in the
+   top-k" is an assertion. Build fixtures where the right answer is forced by
+   construction — a corpus deliberately missing one document, whose requirement
+   therefore MUST come back unmet — and assert that consequence.
+2. **Assert the critical class separately.** One aggregate threshold ("accuracy
+   ≥95%") lets the class that actually matters hide in the average. Pull it out
+   and pin it: abuse recall ≥98%, zero abuse tickets auto-replied.
+3. **Fuzzy output with no single correct answer? Assert the direction of
+   change**: add the decisive evidence ⇒ the verdict must not get worse; remove
+   it ⇒ it must not stay "met"; reorder or reformat the input ⇒ the output must
+   not change. Direction-relations tolerate nondeterminism; exact values don't.
+4. **Invariants ride along free in every other test**: idempotence, no data
+   loss, output ⊆ input, every URL in a reply exists in the retrieved docs.
 
 ## Visual / subjective deliverables: render, then let the judge SEE it
 

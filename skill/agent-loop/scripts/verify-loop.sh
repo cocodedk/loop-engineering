@@ -20,6 +20,8 @@
 #   --goal     PROMPT   What to fix/achieve (required).
 #   --verify   CMD      Shell command whose exit 0 means success (required).
 #   --max      N        Max iterations (default 10). The unattended-safety ceiling.
+#   --max-cost USD      Also stop once the summed per-iteration cost (claude's
+#                       reported total_cost_usd) reaches USD.
 #   --tools    LIST     --allowedTools for claude (default "Read,Edit,Bash").
 #   --stall    N        Bail after N no-progress rounds (same failure signature) (default 3).
 #   --reset-every N     Drop the session every N iterations for fresh eyes (default 0 = never).
@@ -30,17 +32,18 @@
 #   --allow-green-start Skip the red-first guard (loop even if the gate starts green).
 #   --dry-run           Print what would run without calling claude.
 #
-# Exit: 0 done · 1 ceiling/stall · 2 bad args · 3 gate green before any change.
-# Requires: claude, jq (git too if --worktree/--log diff).
+# Exit: 0 done · 1 ceiling/stall/cost · 2 bad args · 3 gate green before any change.
+# Requires: claude, jq, awk (git too if --worktree/--log diff).
 set -euo pipefail
 
-GOAL="" VERIFY="" MAX=10 TOOLS="Read,Edit,Bash" STALL=3 DRY=0
+GOAL="" VERIFY="" MAX=10 TOOLS="Read,Edit,Bash" STALL=3 DRY=0 MAX_COST="" SPENT=0
 RESET_EVERY=0 MODEL="" EFFORT="" ESCALATE_MODEL="" WORKTREE="" LOGDIR="" ALLOW_GREEN=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --goal) GOAL="$2"; shift 2 ;;
     --verify) VERIFY="$2"; shift 2 ;;
     --max) MAX="$2"; shift 2 ;;
+    --max-cost) MAX_COST="$2"; shift 2 ;;
     --tools) TOOLS="$2"; shift 2 ;;
     --stall) STALL="$2"; shift 2 ;;
     --reset-every) RESET_EVERY="$2"; shift 2 ;;
@@ -51,7 +54,7 @@ while [ $# -gt 0 ]; do
     --log) LOGDIR="$2"; shift 2 ;;
     --allow-green-start) ALLOW_GREEN=1; shift ;;
     --dry-run) DRY=1; shift ;;
-    -h|--help) sed -n '2,33p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,35p' "$0"; exit 0 ;;
     *) echo "unknown arg: $1" >&2; exit 2 ;;
   esac
 done
@@ -89,6 +92,17 @@ signature() {
     -e 's/[0-9]+\.[0-9]+s?//g' -e 's/:[0-9]+:/:N:/g' -e 's/0x[0-9a-fA-F]+/0xADDR/g')"
   sig="$(printf '%s\n' "$norm" | grep -iE 'fail|error|assert|traceback|exception|✗' | sort -u)"
   [ -n "$sig" ] && printf '%s' "$sig" || printf '%s' "$norm"
+}
+
+# Dollar ceiling: sum each iteration's reported cost; bail once it crosses the cap.
+add_cost() {  # $1 = claude's JSON output for one call
+  [ -n "$MAX_COST" ] || return 0
+  local c; c="$(jq -r '.total_cost_usd // 0' <<<"$1" 2>/dev/null || echo 0)"
+  SPENT="$(awk -v a="$SPENT" -v b="$c" 'BEGIN{printf "%.6f", a + b}')"
+  if awk -v s="$SPENT" -v m="$MAX_COST" 'BEGIN{exit !(s >= m)}'; then
+    echo "✗ cost ceiling: spent \$$SPENT ≥ --max-cost \$$MAX_COST. Stopping for human review." >&2
+    exit 1
+  fi
 }
 
 log_iter() {  # $1 = iteration number
@@ -140,11 +154,13 @@ weaken, skip, or delete the check to make it pass. Failure output:
 $GATE_OUT"
 
   if [ -z "$session" ]; then
-    session="$(claude -p "$prompt" "${mflag[@]}" "${eflag[@]}" --allowedTools "$TOOLS" --output-format json | jq -r '.session_id')"
+    out="$(claude -p "$prompt" "${mflag[@]}" "${eflag[@]}" --allowedTools "$TOOLS" --output-format json)"
+    session="$(jq -r '.session_id' <<<"$out")"
     [ -n "$session" ] && [ "$session" != "null" ] || { echo "error: no session_id from claude" >&2; exit 1; }
   else
-    claude -p "$prompt" "${mflag[@]}" "${eflag[@]}" --allowedTools "$TOOLS" --resume "$session" >/dev/null
+    out="$(claude -p "$prompt" "${mflag[@]}" "${eflag[@]}" --allowedTools "$TOOLS" --resume "$session" --output-format json)"
   fi
+  add_cost "$out"
 
   # Re-run the gate to test this iteration's fix.
   if run_gate; then log_iter "$iter"; echo "✓ verify passed on iteration $iter. Done."; exit 0; fi

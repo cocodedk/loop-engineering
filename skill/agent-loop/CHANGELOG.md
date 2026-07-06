@@ -11,6 +11,45 @@ tweak that changes nothing about the interface.
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-07-07
+
+Cost ceilings, permission scoping, and assert design. Honest-TDD note: five
+additions were approved; two were dropped because their baseline scenarios
+PASSED (writing-skills rule: no failing test, no guidance). A stall-triage
+checklist and a "freeze deterministic steps into scripts" note proved
+redundant — agents (even haiku) derived correct stall triage from the
+anti-patterns list, and baked the recurring codemod+format step into the gate
+script unprompted, reasoning "the verify command is the only mechanism
+guaranteed to execute every iteration."
+
+### Added
+- **`verify-loop.sh --max-cost USD`** — a dollar ceiling alongside `--max`:
+  sums each iteration's reported `total_cost_usd` (resumed calls now also run
+  `--output-format json`) and bails exit 1 once the cap is crossed. Tested
+  against a mocked `claude` binary: bails at cap, under-cap unaffected,
+  no-flag behavior unchanged, red-first guard intact.
+- **Permission scoping in the 60-second setup**: if supervision is background,
+  also decide what the loop may do alone — scope `--allowedTools`/permissions
+  to the minimum (an overnight loop rarely needs push, network, or rm).
+  Baseline: an overnight-loop setup took the default toolset with zero
+  deliberation; re-test reasons about the minimum explicitly.
+- **gates.md "Designing the asserts"**: force outcomes not shape, assert the
+  critical class separately (aggregate accuracy hides the class that matters),
+  direction-of-change relations for fuzzy outputs, free-riding invariants.
+  Baseline (haiku): a triage-pipeline gate asserted "retrieval returned ≥1
+  doc" and only aggregate accuracy — the exact "completion and shape" trap
+  from the v0.6.0 six-defect hunt. Frontier baselines passed this scenario;
+  the note exists for the cheaper models loops route mechanical work to.
+
+### Verified
+- Re-tests: the overnight-loop setup now deliberates tool scope explicitly;
+  haiku's triage gate now pins the critical class (zero abuse auto-replies),
+  forces outcomes by construction, asserts the no-hallucinated-URL invariant,
+  and adds direction-of-change relations. Stall-triage baselines passed at
+  BOTH model tiers, so that guidance was (correctly) never authored.
+- `--max-cost`: 4/4 mocked-`claude` tests; shellcheck: pre-existing info note
+  only; `verify-loop.sh` at 171/200 lines.
+
 ## [0.7.0] — 2026-07-07
 
 Loop-type selection, aligned with the Claude Code team's taxonomy (Anthropic's
