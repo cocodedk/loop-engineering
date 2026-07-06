@@ -83,8 +83,9 @@ the loop until the gate and ceiling exist.
 Decide **which piece of the work you're handing off** — that picks the loop type,
 and the primitive follows. **If the work doesn't recur and one attempt — with the
 gate run once at the end — would plausibly reach the goal, don't build a loop:**
-run the turn, run the gate, hand back the result. Invest in a verification skill
-that encodes the manual check, not in loop machinery.
+run the turn, run the gate, hand back the result. Reach for the bundled `/verify`
+skill (v2.1.145+) or a project verification skill that encodes the manual check —
+not loop machinery.
 
 | You hand off | Type | Use | Why |
 |---|---|---|---|

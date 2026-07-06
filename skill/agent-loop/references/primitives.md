@@ -94,7 +94,7 @@ Docs: `/docs/en/worktrees`.
 
 | Methodology piece | Primitive |
 |---|---|
-| "Not every task is a loop" — hand off only the check | a single turn + a verification skill |
+| "Not every task is a loop" — hand off only the check | a single turn + `/verify` (v2.1.145+) or a verification skill |
 | "Write the loop that prompts the agent" | `claude -p` while-loop / `verify-loop.sh` |
 | "Iterate until a condition holds" | `/goal`, or a Stop hook |
 | "Verification is the engine" | the verify command that gates the loop |

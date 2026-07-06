@@ -32,6 +32,11 @@ writing-skills TDD process: 4 selection scenarios run against v0.6.0 first.
   verify + workflows for fan-out, output kept as reviewable candidates.
 - Frontmatter trigger: "which loop type or primitive fits" questions
   ("/goal or /loop?", "do I even need a loop for this?").
+- **Turn-based verification names the bundled `/verify` skill** (v2.1.145+,
+  confirmed against the current skills doc) with `/run-skill-generator` for
+  project-specific launches; a custom verification skill remains the path for
+  checks that are yours alone. Baseline: agents hand-rolled verification plans
+  and never reached for `/verify`.
 
 ### Changed
 - **"Pick the primitive" → "Pick the loop type, then the primitive"**: the table

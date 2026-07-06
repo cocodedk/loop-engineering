@@ -23,10 +23,14 @@ plausibly reach the goal, stay here.** "Add a like button and make sure it
 works" is this: edit, run the test, screenshot, done. Building `/goal` or a
 script loop around it buys nothing but tokens and review overhead.
 
-What to invest in instead of machinery: a verification skill that encodes your
-manual check (start the dev server, click the control, zero console errors,
-screenshot before/after) so the single turn self-verifies end-to-end.
-Token lever: more specific prompts + better self-verification = fewer turns.
+What to invest in instead of machinery: verification. Claude Code bundles
+`/verify` (v2.1.145+) — build and run the app to confirm the change does what it
+should, not tests-only — and `/run-skill-generator` to teach it project-specific
+launches. Where the check is yours alone (visual conventions, domain rules),
+encode it as a project verification skill (start the dev server, click the
+control, zero console errors, screenshot before/after) so the single turn
+self-verifies end-to-end. Token lever: more specific prompts + better
+self-verification = fewer turns.
 
 ## Goal-based — you hand off the stop condition
 
