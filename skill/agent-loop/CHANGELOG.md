@@ -42,11 +42,13 @@ guaranteed to execute every iteration."
   the note exists for the cheaper models loops route mechanical work to.
 
 ### Verified
-- Re-tests: the overnight-loop setup now deliberates tool scope explicitly;
-  haiku's triage gate now pins the critical class (zero abuse auto-replies),
-  forces outcomes by construction, asserts the no-hallucinated-URL invariant,
-  and adds direction-of-change relations. Stall-triage baselines passed at
-  BOTH model tiers, so that guidance was (correctly) never authored.
+- 5-rep scenario suite per decision (fable + haiku, every result read
+  manually): stall-triage drop 5/5 (all reps validate gate + signal before
+  escalating); codemod-in-gate drop 5/5 (all reps bake the recurring step into
+  the verify command); assert-design note binding on haiku 5/5 (4 reps produce
+  all four elements, all 5 pin the critical class + grounding invariant);
+  permission scoping 5/5 behavioral, 4/5 with explicit deliberation. Bonus:
+  4/5 overnight-loop reps adopted `--max-cost` unprompted.
 - `--max-cost`: 4/4 mocked-`claude` tests; shellcheck: pre-existing info note
   only; `verify-loop.sh` at 171/200 lines.
 
