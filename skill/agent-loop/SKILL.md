@@ -1,6 +1,6 @@
 ---
 name: agent-loop
-version: 0.5.0
+version: 0.6.0
 description: Use whenever the user wants Claude to keep working on its own until a goal holds: "run a loop", "loop until the tests pass", "keep going until the build is green", "fix all of these until the suite is clean", "babysit this until it's done", "run this autonomously", "set up a self-verifying loop", "iterate until X", or references agent loops / loop engineering / Boris Cherny's "I write loops" methodology. Trigger even when the user never says the word "loop" — any "keep doing X until condition Y holds, then stop" request is a loop. Also use for a large multi-stage objective — "create user manuals", "break this objective into steps", "turn this into a pipeline of loops", or any deliverable whose stages fan out over many items (one loop per page, screen, or endpoint).
 argument-hint: [goal, e.g. "all tests in api/ pass and lint is clean"]
 ---
@@ -147,6 +147,17 @@ babysitter. Treat recurring corrections as a signal to update memory, not to re-
 
 - **No verify gate** — looping on the model's self-assessment. It will lie to itself.
 - **Lint-only verification** — green lint, broken code. Run the actual thing.
+- **An expensive gate as the only instrument** — when the gate is a full pipeline
+  (end-to-end run, film take, deploy, batch job), every hypothesis costs the whole
+  pipeline. Split the instruments: a cheap probe (API call, shell query, unit-level
+  reproducer) falsifies "is the system right?" in minutes; the expensive gate confirms
+  "is the deliverable right?" once, at the end. Seen for real: six masked defects
+  peeled at ~35 min per iteration that a 2-minute probe could each have falsified.
+- **Misreading a correct gate** — the gate can be right while its *reading* is wrong:
+  a count with an unexpected filter, a status that lags aggregation, a log line whose
+  name promises more than it measures. When a confident fix "didn't work", re-derive
+  the failing signal's semantics at its source before iterating — a misread signal
+  falsifies every fix the same way, and the loop thrashes on a phantom.
 - **No budget ceiling** — an unattended loop with no max burns the whole budget on a
   stuck problem. Always cap iterations; consider bailing after N identical failures.
 - **A flaky gate** — a nondeterministic check makes the loop thrash, and worse, tempts

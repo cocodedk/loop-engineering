@@ -11,6 +11,15 @@ tweak that changes nothing about the interface.
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-07-06
+
+Two anti-patterns from a real six-defect hunt (each bug peeled at ~35 min/iteration):
+**an expensive gate as the only instrument** — split cheap probes ("is the system
+right?") from the expensive gate ("is the deliverable right?", once, at the end);
+and **misreading a correct gate** — when a confident fix "didn't work", re-derive
+the failing signal's semantics at its source before iterating (a filtered count or
+lagging aggregate falsifies every fix the same way).
+
 ## [0.5.0] — 2026-07-05
 
 An unknowns-surfacing pass (via the surfacing-unknowns skill): an unattended loop
