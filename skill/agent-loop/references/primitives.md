@@ -31,6 +31,11 @@ stated condition is met, and the loop continues until it is. Under the hood it i
 prompt-based Stop hook. Requires Claude Code v2.1.139+. Start here unless you need
 custom control flow. Docs: `/docs/en/goal`.
 
+- **Turn cap in the condition**: `/goal get the Lighthouse score to 90 or above,
+  stop after 5 tries` — goal achieved OR max turns reached, whichever first. You
+  don't need `verify-loop.sh` just to get a ceiling.
+- **`/goal` with no arguments** reports the turns and token usage so far.
+
 ## Deterministic termination: Stop hooks
 
 A Stop hook runs when Claude is about to end its turn. Two documented variants:
@@ -55,10 +60,10 @@ fi
 When the loop should run on a cadence or react to incoming work rather than run once:
 
 - **`/loop`** — re-run a prompt on a recurring interval (or self-paced when the
-  interval is omitted). Session-scoped. Good for "every 30m, draft fix PRs for new
-  bug-labeled issues." Docs: `/docs/en/scheduled-tasks`.
-- **Cloud routines / scheduled agents** — for truly unattended runs (machine off),
-  schedule a routine instead of a session-scoped `/loop`.
+  interval is omitted). Session-scoped: machine off, loop off. Good for "every 30m,
+  draft fix PRs for new bug-labeled issues." Docs: `/docs/en/scheduled-tasks`.
+- **Cloud routines / scheduled agents (`/schedule`)** — for truly unattended runs
+  (machine off), schedule a routine instead of a session-scoped `/loop`.
 
 These are the path from one self-verifying loop to "a couple hundred agents watching
 GitHub/Slack/Twitter."
@@ -89,6 +94,7 @@ Docs: `/docs/en/worktrees`.
 
 | Methodology piece | Primitive |
 |---|---|
+| "Not every task is a loop" — hand off only the check | a single turn + a verification skill |
 | "Write the loop that prompts the agent" | `claude -p` while-loop / `verify-loop.sh` |
 | "Iterate until a condition holds" | `/goal`, or a Stop hook |
 | "Verification is the engine" | the verify command that gates the loop |

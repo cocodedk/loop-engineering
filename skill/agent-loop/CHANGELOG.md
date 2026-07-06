@@ -11,6 +11,47 @@ tweak that changes nothing about the interface.
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-07-07
+
+Loop-type selection, aligned with the Claude Code team's taxonomy (Anthropic's
+"Getting started with loops"): turn-based / goal-based / time-based / proactive,
+selected by **which piece of the work you hand off** — the check, the stop
+condition, the trigger, or the prompt itself. Baseline-tested per the
+writing-skills TDD process: 4 selection scenarios run against v0.6.0 first.
+
+### Added
+- `references/choosing.md` — the four loop types with trigger, stop criteria,
+  primitive mapping, and a token lever per type; plus the escalation ladder
+  ("start at the top row; move down only when the current row can't hold the job").
+- **The don't-loop off-ramp** (SKILL.md): if the work doesn't recur and one
+  attempt — gate run once at the end — would plausibly reach the goal, run a
+  single verified turn instead of building loop machinery. Baseline failure: a
+  "add a like button and make sure it works" request was routed into `/goal`.
+- **Proactive composition** (SKILL.md table + choosing.md): a recurring stream of
+  well-defined work = `/schedule` trigger + `/goal` per-run done + skills to
+  verify + workflows for fan-out, output kept as reviewable candidates.
+- Frontmatter trigger: "which loop type or primitive fits" questions
+  ("/goal or /loop?", "do I even need a loop for this?").
+
+### Changed
+- **"Pick the primitive" → "Pick the loop type, then the primitive"**: the table
+  is now keyed on what you hand off, and the `/goal` row documents the explicit
+  turn cap (`, stop after N tries`). Baseline failure: an agent picked
+  `verify-loop.sh` for "give up after 5 attempts" *because* the skill nowhere
+  said `/goal` takes a cap — primitives.md now states "you don't need
+  `verify-loop.sh` just to get a ceiling" and that bare `/goal` reports
+  turns + token usage.
+- primitives.md: `/loop` marked session-scoped ("machine off, loop off");
+  cloud routines named as `/schedule`; mapping table gains the
+  "not every task is a loop" row.
+
+### Verified
+- All 4 selection scenarios re-run against v0.7.0: single-turn task → no loop;
+  laptop-off schedule → `/schedule` routine; capped score goal → `/goal … stop
+  after 5 tries`; around-the-clock feedback stream → proactive composition.
+  Plus a variant one-shot task not named in the docs, to rule out
+  example-matching.
+
 ## [0.6.0] — 2026-07-06
 
 Two anti-patterns from a real six-defect hunt (each bug peeled at ~35 min/iteration):
