@@ -11,6 +11,13 @@ tweak that changes nothing about the interface.
 
 ## [Unreleased]
 
+## [0.8.1] — 2026-08-09
+
+Doc-only compression of SKILL.md (224 → 227 lines but −10% prose density;
+connective tissue tightened, zero doctrine changes — all anti-patterns, flags,
+chain machinery, and reference pointers intact, verified by adversarial
+review). No interface change: PATCH per the convention above.
+
 ## [0.8.0] — 2026-07-07
 
 Cost ceilings, permission scoping, and assert design. Honest-TDD note: five

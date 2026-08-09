@@ -1,85 +1,85 @@
 ---
 name: agent-loop
-version: 0.8.0
-description: Use whenever the user wants Claude to keep working on its own until a goal holds: "run a loop", "loop until the tests pass", "keep going until the build is green", "fix all of these until the suite is clean", "babysit this until it's done", "run this autonomously", "set up a self-verifying loop", "iterate until X", or references agent loops / loop engineering / Boris Cherny's "I write loops" methodology. Trigger even when the user never says the word "loop" — any "keep doing X until condition Y holds, then stop" request is a loop. Also use for a large multi-stage objective — "create user manuals", "break this objective into steps", "turn this into a pipeline of loops", or any deliverable whose stages fan out over many items (one loop per page, screen, or endpoint). Also use when the user asks which loop type or primitive fits a task — "/goal or /loop?", "should this be a schedule/routine?", "do I even need a loop for this?".
+version: 0.8.1
+description: Use whenever the user wants Claude to keep working on its own until a goal holds — "run a loop", "loop until the tests pass", "babysit this until it's done", "run this autonomously", "set up a self-verifying loop", or references agent loops / loop engineering / Boris Cherny's "I write loops" methodology. Trigger even without the word "loop": any "keep doing X until condition Y holds, then stop" request is a loop. Also use for a large multi-stage objective — "create user manuals", "break this objective into steps", "turn this into a pipeline of loops" — or any deliverable whose stages fan out over many items (one loop per page, screen, or endpoint). Also use when the user asks which loop type or primitive fits a task — "/goal or /loop?", "should this be a schedule/routine?", "do I even need a loop for this?".
 argument-hint: [goal, e.g. "all tests in api/ pass and lint is clean"]
 ---
 
 # Agent Loop
 
-Turn a goal into a loop that runs itself. Instead of prompting turn by turn, you
-define a goal with a real verification gate and let Claude run **act → verify →
-re-prompt** until the gate passes or a budget ceiling stops it. This is the
-practical companion to the loop-engineering knowledge base (see end of file).
+Turn a goal into a loop that runs itself: define a goal with a real verification
+gate and let Claude run **act → verify → re-prompt** until the gate passes or a
+budget ceiling stops it. Practical companion to the loop-engineering knowledge
+base (see end of file).
 
 ## The one rule: verification is the engine
 
-A loop without a real verification gate is just repeated guessing. The model will
-happily declare victory while the build is red. What makes a loop trustworthy is a
-gate that lets *reality* — a test suite, a build, the app actually running — decide
-whether a pass made progress. Cherny's line: a verification feedback loop "2-3x"
-the quality of the result. So the first question is never "what should the agent
-do" — it's **"how will the loop know it's done?"**
+A loop without a real verification gate is just repeated guessing — the model
+will happily declare victory while the build is red. A gate lets *reality* (a
+test suite, a build, the app actually running) decide whether a pass made
+progress. Cherny: a verification feedback loop "2-3x" the quality of the result.
+The first question is never "what should the agent do" — it's **"how will the
+loop know it's done?"** No way to verify the goal (no tests, no build, no
+runnable check)? Stop and say so; propose adding a check first — looping without
+one is the single most common way these go wrong.
 
-If the project has no way to verify the goal (no tests, no build, no runnable
-check), stop and say so. Propose adding a check first. Looping without one is the
-single most common way these go wrong.
-
-**A gate proves only what it asserts — so validate the gate, don't just run it.**
-Two traps hide here: a gate green *for the wrong reason* (a typo'd test path, a check
-that never exercises the bug — 100% coverage with mocks has shipped real auth bugs
-past review), and a gate too shallow to catch a behavioral break. Two habits close
-both: **prove it red-first** — run the gate on the *unfixed* code and confirm it fails
-*for the right reason* before looping (`verify-loop.sh` does this by default and
-refuses a green start unless `--allow-green-start`); and for correctness- or
+**A gate proves only what it asserts — validate the gate, don't just run it.**
+Two traps: green *for the wrong reason* (a typo'd test path, a check that never
+exercises the bug — 100% coverage with mocks has shipped real auth bugs past
+review), and a gate too shallow to catch a behavioral break. Close both: **prove
+it red-first** — run the gate on the *unfixed* code and confirm it fails *for the
+right reason* before looping (`verify-loop.sh` does this by default; refuses a
+green start unless `--allow-green-start`); and for correctness- or
 security-critical goals make the gate **behavioral / live-data** (drive the real
 endpoint, assert the real contract), not coverage.
 
 **When tests can't see the bug, put a judge in the gate.** Even a behavioral,
-red-first test only checks what it asserts — it can't catch a requirement wired in one
-place but missed at another call-site, a scope/permission leak, or a loop that quietly
-weakened its own tests. For non-trivial or correctness-/security-critical stages, make
-the gate **script AND judge**: the objective tests PLUS an independent reviewer
-(`scripts/judge-check.sh`) that adversarially reads the diff against a rubric and fails
-with feedback the loop then acts on. Drop a `rubric.md` into the stage folder and the
-scaffolded `verify.sh` runs it automatically (`run-tests && judge-check.sh --rubric
-rubric.md`); the judge only fires once the tests pass, so it costs ~one model call per
-green attempt. It MUST be a separate run from the one that wrote the code — the author
-judges its own work poorly. (Real case: a loop's tests passed but it billed the wrong
-API key on one un-tested code path; only an independent review caught it.)
+red-first test only checks what it asserts — it can't catch a requirement wired in
+one place but missed at another call-site, a scope/permission leak, or a loop
+that quietly weakened its own tests. For non-trivial or correctness-/
+security-critical stages, make the gate **script AND judge**: the objective tests
+PLUS an independent reviewer (`scripts/judge-check.sh`) that adversarially reads
+the diff against a rubric and fails with feedback the loop then acts on. Drop a
+`rubric.md` into the stage folder and the scaffolded `verify.sh` runs it
+automatically (`run-tests && judge-check.sh --rubric rubric.md`); the judge only
+fires once the tests pass, so it costs ~one model call per green attempt, and it
+MUST be a separate run from the one that wrote the code — the author judges its
+own work poorly. Real case: a loop's tests passed but it billed the wrong API key
+on one un-tested code path; only an independent review caught it.
 
-**Visual / subjective deliverables — render, then let the judge SEE it.** Have the gate
-render the result to a PNG and point the rubric at the image — `judge-check.sh`'s reviewer
-uses Read, which VIEWS images, so it can rule on look-and-feel. Fold the project's OWN
-conventions (lint, file-size cap, type-check) into the gate, and give judge stages a
-higher `effort` than mechanical ones. Full recipe + evidence: `references/gates.md`.
+**Visual / subjective deliverables — render, then let the judge SEE it.** Have
+the gate render the result to a PNG and point the rubric at the image
+(`judge-check.sh`'s reviewer uses Read, which VIEWS images, so it can rule on
+look-and-feel). Fold the project's OWN conventions (lint, file-size cap,
+type-check) into the gate, and give judge stages a higher `effort` than
+mechanical ones. Full recipe + evidence: `references/gates.md`.
 
 ## Before you loop — the 60-second setup
 
-Walk these five with the user (or infer and state your assumptions). Don't start
-the loop until the gate and ceiling exist.
+Walk these five with the user (or infer and state assumptions). Don't start the
+loop until the gate and ceiling exist.
 
-1. **Goal** — a *checkable* condition, not a vibe. "All tests in `api/` pass and
-   `ruff` is clean," not "make the API better." Then name the goal's **forks** —
-   the readings you'd otherwise resolve silently ("fix the failing tests": fix the
+1. **Goal** — a *checkable* condition, not a vibe: "all tests in `api/` pass and
+   `ruff` is clean," not "make the API better." Name the goal's **forks** —
+   readings you'd otherwise resolve silently ("fix the failing tests": fix the
    code, or fix wrong tests? "migrate": exact behavior, or clean up too?). State
-   the 1–2 forks that change what the loop builds, pick a default, and bake it
-   into the goal prompt — an unattended loop resolves ambiguity alone, one
-   iteration at a time.
-2. **Verify command** — the shell command whose exit code is the gate. Discover it:
-   inspect `package.json` scripts, `Makefile`, `pyproject.toml`/`pytest`, `gradlew`,
-   `go test`, `cargo test`, or the CI workflow. Prefer "can the agent actually run
-   the thing" (tests, a smoke run, a headless browser) over lint-only — lint passing
-   says nothing about whether the code works.
+   the 1–2 forks that change what the loop builds, pick a default, bake it into
+   the goal prompt — an unattended loop resolves ambiguity alone, one iteration
+   at a time.
+2. **Verify command** — the shell command whose exit code is the gate. Discover
+   it from `package.json` scripts, `Makefile`, `pyproject.toml`/`pytest`,
+   `gradlew`, `go test`, `cargo test`, or the CI workflow. Prefer "can the agent
+   actually run the thing" (tests, a smoke run, a headless browser) over
+   lint-only — lint passing says nothing about whether the code works.
 3. **Budget ceiling** — a max iteration count and, for unattended runs, a dollar
    cap (`verify-loop.sh --max-cost USD` sums each iteration's reported cost).
    This is what makes a loop safe to leave unattended. No ceiling, no unattended loop.
 4. **Isolation** — if the loop runs alongside other work, give it its own git
    worktree so parallel changes don't collide (`claude --worktree <name>`).
-5. **Supervision** — attended (watch it) or background (notify on done/stuck).
-   Decide up front; it changes which primitive you pick. If background: also
-   decide what the loop may do alone — scope `--allowedTools`/permissions to the
-   minimum the goal needs (an overnight loop rarely needs push, network, or rm).
+5. **Supervision** — attended (watch it) or background (notify on done/stuck);
+   decide up front, it changes which primitive you pick. If background, scope
+   `--allowedTools`/permissions to the minimum the goal needs (an overnight loop
+   rarely needs push, network, or rm).
 
 ## Pick the loop type, then the primitive
 
@@ -128,14 +128,15 @@ The cycle each iteration: **act** (Claude edits) → **verify** (run the gate) �
 feed the result back → **check budget** → stop or continue. The verify command is
 the brake and the steering wheel.
 
-Safety flags worth knowing (`--help` lists all): `--stall N` bails after N no-progress
-rounds (compared by *normalized signature*, not exact output, so it still catches a
-loop that fails differently each round); `--reset-every N` drops the session for fresh
-eyes when an approach entrenches; `--escalate-model M` makes a last-ditch stronger-model
-attempt before a stall bail; `--worktree PATH` runs the loop on a throwaway branch;
-`--log DIR` writes each iteration's verify output + diff as an audit trail;
-`--allow-green-start` skips the red-first guard; `--max-cost USD` bails once the
-summed per-iteration cost (claude's reported `total_cost_usd`) crosses the cap.
+Safety flags (`--help` lists all): `--stall N` bails after N no-progress rounds
+(compared by *normalized signature*, not exact output, so it still catches a loop
+that fails differently each round); `--reset-every N` drops the session for fresh
+eyes when an approach entrenches; `--escalate-model M` makes a last-ditch
+stronger-model attempt before a stall bail; `--worktree PATH` runs the loop on a
+throwaway branch; `--log DIR` writes each iteration's verify output + diff as an
+audit trail; `--allow-green-start` skips the red-first guard; `--max-cost USD`
+bails once the summed per-iteration cost (claude's reported `total_cost_usd`)
+crosses the cap.
 
 ## Stay in the judgment seat
 
@@ -162,15 +163,16 @@ babysitter. Treat recurring corrections as a signal to update memory, not to re-
 - **Lint-only verification** — green lint, broken code. Run the actual thing.
 - **An expensive gate as the only instrument** — when the gate is a full pipeline
   (end-to-end run, film take, deploy, batch job), every hypothesis costs the whole
-  pipeline. Split the instruments: a cheap probe (API call, shell query, unit-level
-  reproducer) falsifies "is the system right?" in minutes; the expensive gate confirms
-  "is the deliverable right?" once, at the end. Seen for real: six masked defects
-  peeled at ~35 min per iteration that a 2-minute probe could each have falsified.
-- **Misreading a correct gate** — the gate can be right while its *reading* is wrong:
-  a count with an unexpected filter, a status that lags aggregation, a log line whose
-  name promises more than it measures. When a confident fix "didn't work", re-derive
-  the failing signal's semantics at its source before iterating — a misread signal
-  falsifies every fix the same way, and the loop thrashes on a phantom.
+  pipeline. Split instruments: a cheap probe (API call, shell query, unit-level
+  reproducer) falsifies "is the system right?" in minutes; the expensive gate
+  confirms "is the deliverable right?" once, at the end. Real case: six masked
+  defects peeled at ~35 min/iteration that a 2-minute probe could each have caught.
+- **Misreading a correct gate** — the gate can be right while its *reading* is
+  wrong: a count with an unexpected filter, a status that lags aggregation, a log
+  line whose name promises more than it measures. When a confident fix "didn't
+  work," re-derive the failing signal's semantics at the source before iterating
+  — a misread signal falsifies every fix the same way and the loop thrashes on a
+  phantom.
 - **No budget ceiling** — an unattended loop with no max burns the whole budget on a
   stuck problem. Always cap iterations; consider bailing after N identical failures.
 - **A flaky gate** — a nondeterministic check makes the loop thrash, and worse, tempts
@@ -178,13 +180,14 @@ babysitter. Treat recurring corrections as a signal to update memory, not to re-
   the flake rate, split infra-flake from real bug; diagnosis playbook in `references/gates.md`.
 - **Verifying with the context that wrote the code** — a fresh check (a separate run,
   a Stop hook, a real command) catches what the author missed.
-- **A gate the loop can edit** — if the loop has write access to its own gate (the verify
-  script, the rubric, or a skill script referenced by absolute path), it can make a red
-  gate green by *weakening the check* instead of doing the work. Keep gate + skill scripts
-  OUTSIDE the loop's writable scope (read-only, or a path its tools can't reach), and diff
-  them after a run. Seen for real: a design loop whose judge gate gave false negatives
-  edited the judge script itself — that time a legitimate fix, but the *capability* is the
-  risk, and you only know which by reviewing the diff.
+- **A gate the loop can edit** — if the loop has write access to its own gate
+  (verify script, rubric, or a skill script by absolute path), it can turn a red
+  gate green by *weakening the check* instead of doing the work. Keep gate +
+  skill scripts OUTSIDE the loop's writable scope (read-only, or unreachable by
+  its tools) and diff them after a run. Real case: a design loop whose judge gate
+  gave false negatives edited the judge script itself — that time a legitimate
+  fix, but the *capability* is the risk, and you only know which by reviewing
+  the diff.
 
 ## Decompose a big objective into a loop chain
 
