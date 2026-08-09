@@ -2,7 +2,7 @@
 set -eu
 remote_url="${2:-}"
 case "$remote_url" in
-  https://github.com/cocodedk/*|git@github.com:cocodedk/*|ssh://git@github.com/cocodedk/*) ;;
+  https://github.com/cocodedk/*|git@github.com:cocodedk/*|ssh://git@github.com/cocodedk/*|git@github.com-cocodedk:cocodedk/*) ;;
   *)
     echo "pre-push: refusing — push URL is not under github.com/cocodedk" >&2
     echo "  remote: ${1:-?}" >&2
