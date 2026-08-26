@@ -27,6 +27,13 @@
 #   --reset-every N     Drop the session every N iterations for fresh eyes (default 0 = never).
 #   --model    NAME     --model for claude (default: claude's default).
 #   --escalate-model M  Switch to model M for the last try before a stall bail.
+#   --effort-ladder L   Comma-separated effort rungs, cheapest first (e.g.
+#                       "medium,high,xhigh"). Spend cheap effort while the loop is
+#                       making progress; escalate as attempts fail. Monotonic: a
+#                       rung is never demoted, since dropping back mid-problem
+#                       wastes a round. Overrides --effort once it engages.
+#   --ladder-every N    Iterations per rung (default 3). A rung also bumps early
+#                       when the failure signature repeats, whichever comes first.
 #   --worktree PATH     Create + run inside a git worktree at PATH (isolation).
 #   --log      DIR      Write each iteration's verify output + git diff to DIR.
 #   --allow-green-start Skip the red-first guard (loop even if the gate starts green).
@@ -38,6 +45,7 @@ set -euo pipefail
 
 GOAL="" VERIFY="" MAX=10 TOOLS="Read,Edit,Bash" STALL=3 DRY=0 MAX_COST="" SPENT=0
 RESET_EVERY=0 MODEL="" EFFORT="" ESCALATE_MODEL="" WORKTREE="" LOGDIR="" ALLOW_GREEN=0
+EFFORT_LADDER="" LADDER_EVERY=3 LADDER_RUNG=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --goal) GOAL="$2"; shift 2 ;;
@@ -50,6 +58,8 @@ while [ $# -gt 0 ]; do
     --model) MODEL="$2"; shift 2 ;;
     --effort) EFFORT="$2"; shift 2 ;;
     --escalate-model) ESCALATE_MODEL="$2"; shift 2 ;;
+    --effort-ladder) EFFORT_LADDER="$2"; shift 2 ;;
+    --ladder-every) LADDER_EVERY="$2"; shift 2 ;;
     --worktree) WORKTREE="$2"; shift 2 ;;
     --log) LOGDIR="$2"; shift 2 ;;
     --allow-green-start) ALLOW_GREEN=1; shift ;;
@@ -95,10 +105,14 @@ signature() {
 }
 
 # Dollar ceiling: sum each iteration's reported cost; bail once it crosses the cap.
-add_cost() {  # $1 = claude's JSON output for one call
-  [ -n "$MAX_COST" ] || return 0
+track_cost() {  # accumulate only — no enforcement
   local c; c="$(jq -r '.total_cost_usd // 0' <<<"$1" 2>/dev/null || echo 0)"
   SPENT="$(awk -v a="$SPENT" -v b="$c" 'BEGIN{printf "%.6f", a + b}')"
+}
+
+add_cost() {  # $1 = claude's JSON output for one call
+  [ -n "$MAX_COST" ] || return 0
+  track_cost "$1"
   if awk -v s="$SPENT" -v m="$MAX_COST" 'BEGIN{exit !(s >= m)}'; then
     echo "✗ cost ceiling: spent \$$SPENT ≥ --max-cost \$$MAX_COST. Stopping for human review." >&2
     exit 1
@@ -145,7 +159,22 @@ while [ "$iter" -lt "$MAX" ]; do
   use_model="$MODEL"
   [ -n "$ESCALATE_MODEL" ] && [ "$stall_count" -ge $((STALL - 1)) ] && use_model="$ESCALATE_MODEL"
   mflag=(); [ -n "$use_model" ] && mflag=(--model "$use_model")
-  eflag=(); [ -n "$EFFORT" ] && eflag=(--effort "$EFFORT")
+  # Effort ladder: cheap effort while progress is being made, escalate as attempts
+  # fail. Iteration-driven rather than stall-driven on purpose — stall_count only
+  # rises on an IDENTICAL failure signature, so a loop failing differently every
+  # round would never leave the first rung.
+  use_effort="$EFFORT"
+  if [ -n "$EFFORT_LADDER" ]; then
+    IFS=, read -r -a _rungs <<<"$EFFORT_LADDER"
+    _last=$(( ${#_rungs[@]} - 1 ))
+    _want=$(( (iter - 1) / LADDER_EVERY ))
+    [ "$stall_count" -gt "$_want" ] && _want="$stall_count"
+    [ "$_want" -gt "$_last" ] && _want="$_last"
+    [ "$_want" -gt "$LADDER_RUNG" ] && LADDER_RUNG="$_want"
+    use_effort="${_rungs[$LADDER_RUNG]}"
+    echo "   effort rung $LADDER_RUNG/$_last → $use_effort"
+  fi
+  eflag=(); [ -n "$use_effort" ] && eflag=(--effort "$use_effort")
 
   prompt="Goal: $GOAL
 
@@ -160,11 +189,15 @@ $GATE_OUT"
   else
     out="$(claude -p "$prompt" "${mflag[@]}" "${eflag[@]}" --allowedTools "$TOOLS" --resume "$session" --output-format json)"
   fi
-  add_cost "$out"
-
-  # Re-run the gate to test this iteration's fix.
-  if run_gate; then log_iter "$iter"; echo "✓ verify passed on iteration $iter. Done."; exit 0; fi
+  # Re-run the gate BEFORE enforcing the cost ceiling. The work of this iteration is already
+  # paid for either way, and a slice that just went green must not be thrown away unverified
+  # because it crossed the cap by a few cents.
+  if run_gate; then
+    log_iter "$iter"; track_cost "$out"
+    echo "✓ verify passed on iteration $iter (spent \$$SPENT). Done."; exit 0
+  fi
   log_iter "$iter"
+  add_cost "$out"
 done
 
 echo "✗ hit iteration ceiling ($MAX) without passing verification." >&2

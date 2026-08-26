@@ -82,9 +82,20 @@ and only advances when **all** pass (the join).
   `state/.done/<stage>` marker, or every stage logs a spurious "output missing"
   warning (the engine owns that marker itself).
 - **engine.effort / engine.model** (optional) set per-stage reasoning effort
-  (`low`…`max`) and model; default = claude's session default. Set `effort` high on
+  (`low`…`max`, plus `xhigh`) and model; default = claude's session default. Set `effort` high on
   the hard judgment stages (design, judge), low on mechanical ones — otherwise the
   chain pays judgment effort for a file copy and vice-versa.
+- **engine.effort_ladder / engine.ladder_every** (optional) escalate effort *within* a
+  stage instead of paying one flat rate: `"effort_ladder": "medium,high,xhigh"` with
+  `"ladder_every": 3` spends medium on iterations 1-3, high on 4-6, xhigh on 7-9. A rung
+  also bumps early when the failure signature repeats, and the ladder is **monotonic** —
+  never demoted, because dropping back mid-problem wastes a round. This is the cheap-first
+  shape: most slices land on the first rung, and only the genuinely hard ones pay for
+  xhigh. Pair with `engine.max` ≥ rungs × `ladder_every`, and `engine.stall` one above the
+  rung count so the top rung gets a real attempt before the stall bail.
+- **engine.stall / engine.reset_every / engine.max_cost** (optional) forward the
+  corresponding `verify-loop.sh` rails. Without these a chained loop has no cost ceiling —
+  the flags existed but were previously unreachable from a chain.
 - **The terminal stage must be `human`** (or pass `--allow-green-start`). A final
   "review" stage whose *script* gate merely re-checks what earlier stages produced is
   green before the loop changes anything → the red-first guard correctly refuses it

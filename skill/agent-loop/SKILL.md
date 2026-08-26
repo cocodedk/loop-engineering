@@ -1,6 +1,6 @@
 ---
 name: agent-loop
-version: 0.8.1
+version: 0.9.0
 description: Use whenever the user wants Claude to keep working on its own until a goal holds — "run a loop", "loop until the tests pass", "babysit this until it's done", "run this autonomously", "set up a self-verifying loop", or references agent loops / loop engineering / Boris Cherny's "I write loops" methodology. Trigger even without the word "loop": any "keep doing X until condition Y holds, then stop" request is a loop. Also use for a large multi-stage objective — "create user manuals", "break this objective into steps", "turn this into a pipeline of loops" — or any deliverable whose stages fan out over many items (one loop per page, screen, or endpoint). Also use when the user asks which loop type or primitive fits a task — "/goal or /loop?", "should this be a schedule/routine?", "do I even need a loop for this?".
 argument-hint: [goal, e.g. "all tests in api/ pass and lint is clean"]
 ---
@@ -132,7 +132,10 @@ Safety flags (`--help` lists all): `--stall N` bails after N no-progress rounds
 (compared by *normalized signature*, not exact output, so it still catches a loop
 that fails differently each round); `--reset-every N` drops the session for fresh
 eyes when an approach entrenches; `--escalate-model M` makes a last-ditch
-stronger-model attempt before a stall bail; `--worktree PATH` runs the loop on a
+stronger-model attempt before a stall bail; `--effort-ladder "medium,high,xhigh"`
+with `--ladder-every N` escalates *reasoning effort* as attempts fail — cheap rung
+first, monotonic, so a stage pays for deep reasoning only once the cheap attempts
+have actually failed; `--worktree PATH` runs the loop on a
 throwaway branch; `--log DIR` writes each iteration's verify output + diff as an
 audit trail; `--allow-green-start` skips the red-first guard; `--max-cost USD`
 bails once the summed per-iteration cost (claude's reported `total_cost_usd`)

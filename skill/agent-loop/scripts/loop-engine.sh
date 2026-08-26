@@ -48,10 +48,20 @@ else
   effort="$(j '.engine.effort // ""')"; model="$(j '.engine.model // ""')"
   eopt=(); [ -n "$effort" ] && eopt=(--effort "$effort")
   mopt=(); [ -n "$model" ] && mopt=(--model "$model")
+  # Safety rails + the effort ladder, forwarded from loop.json. Without these a
+  # chained loop has no cost ceiling and no way to escalate: the flags exist on
+  # verify-loop.sh but were previously unreachable from a chain.
+  xopt=()
+  for kv in stall:--stall reset_every:--reset-every max_cost:--max-cost \
+            effort_ladder:--effort-ladder ladder_every:--ladder-every log:--log; do
+    key="${kv%%:*}"; flag="${kv#*:}"
+    val="$(j ".engine.${key} // \"\"")"
+    [ -n "$val" ] && xopt+=("$flag" "$val")
+  done
   cd "$WORKSPACE"
   case "$gate" in
     script)
-      "$HERE/verify-loop.sh" --goal "$goal" --verify "$(j '.gate.verify')" --max "$max" --tools "$tools" "${eopt[@]}" "${mopt[@]}"
+      "$HERE/verify-loop.sh" --goal "$goal" --verify "$(j '.gate.verify')" --max "$max" --tools "$tools" "${eopt[@]}" "${mopt[@]}" "${xopt[@]}"
       ;;
     judge)
       "$HERE/judge-loop.sh" --goal "$goal" --rubric "$LOOP_DIR/$(j '.gate.rubric // "rubric.md"')" --max "$max" --tools "$tools"

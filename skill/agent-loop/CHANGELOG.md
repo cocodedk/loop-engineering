@@ -11,6 +11,29 @@ tweak that changes nothing about the interface.
 
 ## [Unreleased]
 
+## [0.9.0] — 2026-08-24
+
+### Added
+- `verify-loop.sh --effort-ladder "medium,high,xhigh"` + `--ladder-every N`: escalate
+  reasoning **effort** within a loop as attempts fail, instead of paying one flat rate for
+  every iteration. Iteration-driven (rung = `⌊(iter-1)/every⌋`) rather than stall-driven,
+  because `stall_count` only rises on an *identical* failure signature — a loop failing
+  differently each round would otherwise never leave the first rung. A repeated signature
+  still bumps the rung early, whichever comes first. **Monotonic:** the rung is never
+  demoted, since dropping back to a cheap rung mid-problem wastes a round.
+- `loop-engine.sh` now forwards `engine.stall`, `engine.reset_every`, `engine.max_cost`,
+  `engine.effort_ladder` and `engine.ladder_every` from `loop.json`. These flags existed on
+  `verify-loop.sh` but were **unreachable from a chain**, so a chained loop had no cost
+  ceiling and no way to escalate.
+- `templates/implement-slice/`: a per-slice implementation loop for driving a written plan.
+  Each stage reads its own section of the source plan (rather than a paraphrase), and its
+  gate is repo-invariants AND the slice's own new test AND an independent xhigh judge.
+  Adds two safeguards worth reusing: the slice's test target does not exist yet, so the
+  red-first guard is satisfied *by construction* and TDD is enforced by the machinery; and
+  `verify.sh` verifies a `state/gate-hashes.txt` checksum of every frozen gate file before
+  running, so a loop that edits its own gate fails instead of passing.
+
+
 ## [0.8.1] — 2026-08-09
 
 Doc-only compression of SKILL.md (224 → 227 lines but −10% prose density;

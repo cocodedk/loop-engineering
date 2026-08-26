@@ -1,0 +1,18 @@
+{
+  "goal_file": "prompt.md",
+  "gate": { "type": "script", "verify": "bash \"$LOOP_DIR/verify.sh\"" },
+  "inputs": ["state/slices.json"],
+  "outputs": ["state/slices/{{SLICE_ID}}.md"],
+  "engine": {
+    "max": 9,
+    "tools": "Read,Write,Edit,Bash",
+    "model": "opus",
+    "effort_ladder": "medium,high,xhigh",
+    "ladder_every": 3,
+    "stall": 4,
+    "reset_every": 3,
+    "max_cost": "{{MAX_COST}}",
+    "log": "logs/{{SLICE_ID}}"
+  },
+  "next": "{{NEXT}}"
+}
