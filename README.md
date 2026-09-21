@@ -4,7 +4,7 @@
 
 ## Website
 
-[Read online](https://cocodedk.github.io/loop-engineering/) — the GitHub Pages rendering of this knowledge base.
+[Read online](https://loops.cocode.dk/) — the GitHub Pages rendering of this knowledge base.
 
 ## TL;DR
 

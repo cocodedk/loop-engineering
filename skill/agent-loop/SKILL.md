@@ -225,6 +225,6 @@ planner procedure, and a worked user-manual example before building a chain.**
 - `references/loop-chains-design.md` — the approved design spec for loop chains.
 - `references/primitives.md` — the documented Claude Code primitives, with flags and caveats.
 - Knowledge base (the "why" behind all of this): `/home/cocodedk/0-projects/loop-engineering`
-  · online at https://cocodedk.github.io/loop-engineering/ · repo
+  · online at https://loops.cocode.dk/ · repo
   https://github.com/cocodedk/loop-engineering. Start with `docs/04-loop-anatomy.md`,
   `docs/05-verification-and-memory.md`, and `docs/09-example-loops.md`.
