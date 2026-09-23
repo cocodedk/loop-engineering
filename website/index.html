@@ -42,6 +42,8 @@
   <link rel="stylesheet" href="css/hero.css">
   <link rel="stylesheet" href="css/content.css">
   <link rel="stylesheet" href="css/motion.css">
+  <link rel="stylesheet" href="https://brand.cocode.dk/v1.css">
+  <script type="module" src="https://brand.cocode.dk/v1.js"></script>
 
   <script type="application/ld+json">
   {
@@ -68,6 +70,12 @@
   </script>
 </head>
 <body>
+  <!-- The cocode.dk family frame. Without JavaScript its children show instead: a way home.
+       No hreflang alternates on this page — it has no other language. -->
+  <cocode-head project="Loop Engineering" accent="#e8a33d" on-accent="#16140f" dark>
+    <a href="https://cocode.dk">cocode.dk</a>
+  </cocode-head>
+
   <div class="wrap">
     <header class="hero">
       <svg class="hero__glyph" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -236,10 +244,12 @@
     </main>
 
     <footer class="site-footer">
-      <p>
-        Apache-2.0 · © 2026 <a href="https://cocode.dk" target="_blank" rel="noreferrer">Cocode</a> · Compiled by <a href="https://linkedin.com/in/babakbandpey" target="_blank" rel="noreferrer">Babak Bandpey</a>
-      </p>
+      <p>Apache-2.0</p>
     </footer>
   </div>
+
+  <cocode-foot repo="cocodedk/loop-engineering" dark>
+    <a href="https://cocode.dk">cocode.dk</a>
+  </cocode-foot>
 </body>
 </html>
