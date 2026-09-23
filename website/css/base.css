@@ -74,6 +74,15 @@ body::before {
   padding-block: clamp(2.5rem, 8vw, 4.5rem);
 }
 
+/* The cocode.dk frame lines up with this column. It sits outside .wrap (a direct child of
+   body, as the frame requires), so it needs the same z-index to clear body::before's grain. */
+cocode-head, cocode-foot {
+  --cocode-max: var(--col);
+  --cocode-gutter: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
 main > section {
   margin-top: var(--section-gap);
 }
