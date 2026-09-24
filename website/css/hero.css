@@ -4,11 +4,15 @@
   margin-top: 0;
 }
 
-/* big faint rotating loop glyph behind the hero */
+/* big faint rotating loop glyph behind the hero. Below 768px .wrap is full viewport
+   width (its 720px max-width doesn't apply yet), so a negative "right" here is a
+   bleed straight past the viewport edge, not just past the column - right:0 keeps
+   it inside .hero at those widths; the >=768px tier below re-adds the bleed once
+   .wrap is centred with real margin around it. */
 .hero__glyph {
   position: absolute;
   top: -2.5rem;
-  right: -2rem;
+  right: 0;
   width: clamp(180px, 60vw, 360px);
   height: auto;
   color: var(--amber);
